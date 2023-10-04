@@ -1,7 +1,9 @@
 {
   "name": "one-folder-app",
   "version": "1.0.0",
-  "scripts": {},
+  "scripts": {
+    "dev:api": "pnpm --filter='api' dev"
+  },
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^20.8.2",
