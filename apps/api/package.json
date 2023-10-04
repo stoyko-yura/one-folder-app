@@ -1,0 +1,11 @@
+{
+  "name": "@one-folder-app/api",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "scripts": {},
+  "devDependencies": {
+    "@one-folder-app/eslint-config-custom": "workspace:*",
+    "@one-folder-app/tsconfig": "workspace:*"
+  },
+  "license": "ISC"
+}

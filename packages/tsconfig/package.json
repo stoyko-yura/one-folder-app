@@ -1,0 +1,10 @@
+{
+  "name": "@one-folder-app/tsconfig",
+  "version": "1.0.0",
+  "license": "ISC",
+  "files": [
+    "base.json",
+    "node.json",
+    "react.json"
+  ]
+}

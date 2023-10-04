@@ -1,0 +1,9 @@
+{
+  "extends": "./base.json",
+  "display": "Node",
+  "compilerOptions": {
+    "target": "es2016",
+    "module": "commonjs",
+    "esModuleInterop": true
+  }
+}
