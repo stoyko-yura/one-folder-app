@@ -1,0 +1,11 @@
+{
+  "name": "one-folder-app",
+  "version": "1.0.0",
+  "scripts": {},
+  "license": "ISC",
+  "devDependencies": {
+    "eslint": "^8.50.0",
+    "prettier": "^3.0.3",
+    "typescript": "^5.2.2"
+  }
+}
