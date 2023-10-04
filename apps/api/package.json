@@ -1,11 +1,14 @@
 {
   "name": "@one-folder-app/api",
   "version": "1.0.0",
-  "main": "dist/index.js",
   "scripts": {},
+  "_moduleAliases": {
+    "@/root": "dist"
+  },
   "devDependencies": {
     "@one-folder-app/eslint-config-custom": "workspace:*",
-    "@one-folder-app/tsconfig": "workspace:*"
+    "@one-folder-app/tsconfig": "workspace:*",
+    "module-alias": "^2.2.3"
   },
   "license": "ISC"
 }

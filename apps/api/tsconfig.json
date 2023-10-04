@@ -4,7 +4,11 @@
     "outDir": "dist",
     "rootDir": "src",
     "baseUrl": "src",
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "paths": {
+      "@/*": ["*"],
+      "@/root/*": ["*"]
+    }
   },
   "include": ["src", ".eslintrc.cjs"],
   "exclude": ["dist", "node_modules"]

@@ -1,5 +1,3 @@
-const hello = () => {
-  console.log('hello world');
-};
+import 'module-alias/register';
 
-hello();
+console.log('hello');
