@@ -1,3 +1,3 @@
-import 'module-alias/register';
+import './lib/aliases';
 
 console.log('hello');
