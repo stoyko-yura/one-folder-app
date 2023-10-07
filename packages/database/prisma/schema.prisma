@@ -9,3 +9,90 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id        String    @id @default(uuid())
+  username  String    @unique
+  hash      String    @map("passwordHash")
+  email     String    @unique
+  role      Role      @default(USER)
+  folders   Folder[]
+  comments  Comment[]
+  createdAt DateTime  @default(now())
+
+  @@map("users")
+}
+
+model Folder {
+  id          String       @id @default(uuid())
+  image       String?
+  title       String
+  description String?
+  access      FolderAccess @default(PUBLIC)
+  software    Software[]
+  comments    Comment[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  author      User?        @relation(fields: [authorId], references: [id])
+  authorId    String?
+
+  @@map("folders")
+}
+
+model Software {
+  id                 String           @id @default(uuid())
+  icon               String?
+  title              String
+  url                String
+  rate               Rate             @relation(fields: [rateId], references: [id])
+  rateId             String
+  description        String?
+  category           SoftwareCategory @relation(fields: [softwareCategoryId], references: [id])
+  softwareCategoryId String
+  folder             Folder?          @relation(fields: [folderId], references: [id])
+  folderId           String?
+  createdAt          DateTime         @default(now())
+
+  @@map("software")
+}
+
+model SoftwareCategory {
+  id       String     @id @default(uuid())
+  title    String
+  software Software[]
+
+  @@map("softwareCategories")
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  message   String?
+  rate      Rate     @relation(fields: [rateId], references: [id])
+  rateId    String
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  String
+  folder    Folder?  @relation(fields: [folderId], references: [id])
+  folderId  String
+  createdAt DateTime @default(now())
+
+  @@map("comments")
+}
+
+model Rate {
+  id       String     @id @default(uuid())
+  rate     Int
+  Comment  Comment[]
+  Software Software[]
+
+  @@map("rates")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum FolderAccess {
+  PUBLIC
+  PRIVATE
+}
