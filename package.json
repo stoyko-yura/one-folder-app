@@ -2,7 +2,15 @@
   "name": "one-folder-app",
   "version": "1.0.0",
   "scripts": {
-    "dev:api": "pnpm --filter='api' dev"
+    "build:api": "pnpm --filter='api' build",
+    "build:database": "pnpm --filter='database' build",
+    "build": "pnpm '/^build:/'",
+    "dev:api": "pnpm --filter='api' dev",
+    "dev": "pnpm '/^dev:/'",
+    "start:api": "pnpm --filter='api' start",
+    "start": "pnpm '/^start:/'",
+    "db:generate": "pnpm --filter='database' db:generate",
+    "db:push": "pnpm --filter='database' db:push"
   },
   "license": "ISC",
   "devDependencies": {
