@@ -2,7 +2,10 @@
   "name": "@one-folder-app/database",
   "version": "1.0.0",
   "main": "dist/index.js",
+  "module": "dist/index.cjs",
+  "types": "dist/index.d.ts",
   "scripts": {
+    "predev": "prisma generate && tsc",
     "build": "tsc",
     "db:generate": "prisma generate",
     "db:push": "prisma db push --skip-generate"

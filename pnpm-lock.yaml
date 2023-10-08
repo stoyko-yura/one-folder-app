@@ -26,6 +26,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@one-folder-app/database':
+        specifier: workspace:*
+        version: link:../../packages/database
       bcrypt:
         specifier: ^5.1.1
         version: 5.1.1
