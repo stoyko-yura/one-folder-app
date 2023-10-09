@@ -13,7 +13,11 @@
   "_moduleAliases": {
     "@/root": "dist",
     "@/config": "dist/config",
-    "@/utils": "dist/utils"
+    "@/lib": "dist/lib",
+    "@/utils": "dist/utils",
+    "@/controllers": "dist/controllers",
+    "@/middleware": "dist/middleware",
+    "@/routes": "dist/routes"
   },
   "devDependencies": {
     "@one-folder-app/eslint-config-custom": "workspace:*",
