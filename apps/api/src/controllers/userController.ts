@@ -7,7 +7,15 @@ import { excludeFields } from '@/utils';
 // Get users
 export const getUsers = async (req: Request, res: Response) => {
   try {
-    const users = await dbClient.user.findMany({});
+    const { page, limit, pageIndex } = req.query;
+
+    const users = await dbClient.user.findMany({
+      orderBy: {
+        createdAt: 'asc'
+      },
+      skip: Number(pageIndex) * (Number(limit) || 10),
+      take: Number(limit) || 10
+    });
 
     if (!users.length) {
       return res.status(404).json({
@@ -16,9 +24,30 @@ export const getUsers = async (req: Request, res: Response) => {
       });
     }
 
+    const totalUsers = await dbClient.user.count();
+    const totalPages = Math.ceil(totalUsers / Number(limit));
+
+    const links = {
+      previus:
+        Number(page) > 1
+          ? `${req.protocol}://${req.headers.host}/api/users?page=${
+              Number(page) - 1
+            }&limit=${Number(limit)}`
+          : null,
+      next:
+        Number(page) < totalPages
+          ? `${req.protocol}://${req.headers.host}/api/users?page=${
+              Number(page) + 1
+            }&limit=${Number(limit)}`
+          : null
+    };
+
     res.status(200).json({
       message: 'Users loaded',
       success: true,
+      totalPages,
+      totalUsers,
+      links,
       users: excludeFields(users, ['hash'])
     });
   } catch (error) {

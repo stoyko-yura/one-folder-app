@@ -1,11 +1,12 @@
 import { Router } from 'express';
 
 import { userControllers } from '@/controllers';
+import { pagination } from '@/middleware/pagination';
 
 const router: Router = Router();
 
 // Get users
-router.get('/', userControllers.getUsers);
+router.get('/', pagination, userControllers.getUsers);
 
 // Get user
 router.get('/:userId', userControllers.getUser);
