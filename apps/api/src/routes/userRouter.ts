@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
 import { userControllers } from '@/controllers';
-import { pagination } from '@/middleware/pagination';
+import { pagination } from '@/middleware';
 
 const router: Router = Router();
 
