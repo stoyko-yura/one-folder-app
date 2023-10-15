@@ -30,3 +30,18 @@ export const registerValidation: ValidationChain[] = [
     })
     .withMessage('Wrong password format')
 ];
+
+export const changePasswordValidation: ValidationChain[] = [
+  body('password').notEmpty().withMessage('Password is required'),
+  body('newPassword')
+    .notEmpty()
+    .withMessage('Password is required')
+    .isStrongPassword({
+      minLength: 7,
+      minLowercase: 1,
+      minNumbers: 1,
+      minSymbols: 0,
+      minUppercase: 1
+    })
+    .withMessage('Wrong password format')
+];

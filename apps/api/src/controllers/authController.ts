@@ -165,3 +165,78 @@ export const getMe = async (req: Request, res: Response) => {
     errorHandler(error as Error, res);
   }
 };
+
+export const changePassword = async (req: Request, res: Response) => {
+  try {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(500).json({
+        errors: errors.array(),
+        success: false
+      });
+    }
+
+    const { userId, password, newPassword } = req.body;
+
+    const user = await dbClient.user.findUnique({
+      where: {
+        id: userId
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        message: `User ${userId} not found`,
+        success: false
+      });
+    }
+
+    const isValidPassword = await bcrypt.compare(password, user.hash);
+
+    if (!isValidPassword) {
+      return res.status(400).json({
+        message: 'Invalid password',
+        sucess: false
+      });
+    }
+
+    if (isValidPassword && password === newPassword) {
+      return res.status(500).json({
+        message: 'New password must not be similar to the previous password',
+        success: false
+      });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(newPassword, salt);
+
+    const editedUser = await dbClient.user.update({
+      data: {
+        hash: passwordHash
+      },
+      where: {
+        id: userId
+      }
+    });
+
+    const token = jwt.sign(
+      {
+        userId: user.id
+      },
+      config.SECRET_JWT,
+      {
+        expiresIn: '7d'
+      }
+    );
+
+    res.status(200).json({
+      message: 'Password successfully changed',
+      success: true,
+      token,
+      user: editedUser
+    });
+  } catch (error) {
+    errorHandler(error as Error, res);
+  }
+};

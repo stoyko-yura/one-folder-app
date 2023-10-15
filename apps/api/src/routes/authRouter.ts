@@ -1,7 +1,12 @@
 import { Router } from 'express';
 
 import { authControllers } from '@/controllers';
-import { checkAuth, loginValidation, registerValidation } from '@/middleware';
+import {
+  changePasswordValidation,
+  checkAuth,
+  loginValidation,
+  registerValidation
+} from '@/middleware';
 
 const router: Router = Router();
 
@@ -13,5 +18,8 @@ router.post('/register', registerValidation, authControllers.register);
 
 // Get me
 router.get('/me', checkAuth, authControllers.getMe);
+
+// Change password
+router.put('/change-password', checkAuth, changePasswordValidation, authControllers.changePassword);
 
 export const authRouter = router;
