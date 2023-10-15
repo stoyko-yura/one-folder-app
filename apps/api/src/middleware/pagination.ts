@@ -12,7 +12,7 @@ export const pagination = (req: Request, res: Response, next: NextFunction) => {
     const pageIndex = parsedPage - 1;
 
     if (parsedPage < 0) {
-      throw new Error('Page must be at least 1');
+      return errorHandler(new Error('Page must be at least 1'), res);
     }
 
     req.query = {

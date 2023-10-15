@@ -18,26 +18,23 @@ export const getUsers = async (req: Request, res: Response) => {
     });
 
     if (!users.length) {
-      return res.status(404).json({
-        message: 'Users not found',
-        success: false
-      });
+      return errorHandler(new Error('Users not found'), res, 404);
     }
 
     const totalUsers = await dbClient.user.count();
     const totalPages = Math.ceil(totalUsers / Number(limit));
 
     const links = {
-      previus:
-        Number(page) > 1
-          ? `${req.protocol}://${req.headers.host}/api/users?page=${
-              Number(page) - 1
-            }&limit=${Number(limit)}`
-          : null,
       next:
         Number(page) < totalPages
           ? `${req.protocol}://${req.headers.host}/api/users?page=${
               Number(page) + 1
+            }&limit=${Number(limit)}`
+          : null,
+      previus:
+        Number(page) > 1
+          ? `${req.protocol}://${req.headers.host}/api/users?page=${
+              Number(page) - 1
             }&limit=${Number(limit)}`
           : null
     };
@@ -63,10 +60,7 @@ export const getUser = async (req: Request, res: Response) => {
     const user = await dbClient.user.findUnique({ where: { id: userId } });
 
     if (!user) {
-      return res.status(404).json({
-        message: `User ${userId} not found`,
-        success: false
-      });
+      return errorHandler(new Error(`User ${userId} not found`), res, 404);
     }
 
     res.status(200).json({
@@ -88,10 +82,7 @@ export const putUser = async (req: Request, res: Response) => {
     const user = await dbClient.user.findUnique({ where: { id: userId } });
 
     if (!user) {
-      return res.status(404).json({
-        message: `User ${userId} not found`,
-        success: false
-      });
+      return errorHandler(new Error(`User ${userId} not found`), res, 404);
     }
 
     const editedUser = await dbClient.user.update({
@@ -121,10 +112,7 @@ export const deleteUser = async (req: Request, res: Response) => {
     const user = await dbClient.user.findUnique({ where: { id: userId } });
 
     if (!user) {
-      return res.status(404).json({
-        message: `User ${userId} not found`,
-        success: false
-      });
+      return errorHandler(new Error(`User ${userId} not found`), res, 404);
     }
 
     await dbClient.user.delete({ where: { id: userId } });

@@ -28,19 +28,13 @@ export const login = async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      return res.status(404).json({
-        message: 'User not found',
-        success: false
-      });
+      return errorHandler(new Error('User not found'), res, 404);
     }
 
     const isValidPassword = await bcrypt.compare(password, user.hash);
 
     if (!isValidPassword) {
-      return res.status(400).json({
-        message: 'Invalid username or password',
-        sucess: false
-      });
+      return errorHandler(new Error('Invalid username or password'), res, 400);
     }
 
     const token = jwt.sign(
@@ -92,7 +86,7 @@ export const register = async (req: Request, res: Response) => {
     });
 
     if (user) {
-      throw new Error('Username or email already exist');
+      return errorHandler(Error('Username or email already exist'), res);
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -139,10 +133,7 @@ export const getMe = async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      return res.status(404).json({
-        message: 'Something went wrong',
-        success: false
-      });
+      return errorHandler(new Error('Something went wrong'), res);
     }
 
     const token = jwt.sign(
@@ -186,26 +177,20 @@ export const changePassword = async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      return res.status(404).json({
-        message: `User ${userId} not found`,
-        success: false
-      });
+      return errorHandler(new Error(`User ${userId} not found`), res, 404);
     }
 
     const isValidPassword = await bcrypt.compare(password, user.hash);
 
     if (!isValidPassword) {
-      return res.status(400).json({
-        message: 'Invalid password',
-        sucess: false
-      });
+      return errorHandler(new Error('Invalid password'), res, 400);
     }
 
     if (isValidPassword && password === newPassword) {
-      return res.status(500).json({
-        message: 'New password must not be similar to the previous password',
-        success: false
-      });
+      return errorHandler(
+        new Error('New password must not be similar to the previous password'),
+        res
+      );
     }
 
     const salt = await bcrypt.genSalt(10);

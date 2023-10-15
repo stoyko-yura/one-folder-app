@@ -4,7 +4,7 @@ export const excludeFields = <T, Key extends keyof T>(
 ): Omit<T, Key> | Omit<T, Key>[] => {
   if (Array.isArray(obj)) {
     const result = obj.map((item) => {
-      const filteredEntries = Object.entries(item as { [key: string]: any }).filter(
+      const filteredEntries = Object.entries(item as { [key: string]: unknown }).filter(
         ([key]) => !keys.includes(key as Key)
       );
 
@@ -14,7 +14,7 @@ export const excludeFields = <T, Key extends keyof T>(
     return result;
   }
 
-  const filteredEntries = Object.entries(obj as { [key: string]: any }).filter(
+  const filteredEntries = Object.entries(obj as { [key: string]: unknown }).filter(
     ([key]) => !keys.includes(key as Key)
   );
 
