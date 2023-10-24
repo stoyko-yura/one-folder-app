@@ -45,3 +45,34 @@ export const changePasswordValidation: ValidationChain[] = [
     })
     .withMessage('Wrong password format')
 ];
+
+// User validation
+export const editUserValidation: ValidationChain[] = [
+  body('username')
+    .notEmpty()
+    .withMessage('Username is required')
+    .isLength({ max: 24, min: 4 })
+    .withMessage('Username must contain from 4 to 24 characters'),
+  body('email')
+    .notEmpty()
+    .withMessage('Email is required')
+    .isEmail()
+    .withMessage('Wrong email format')
+];
+
+// Software categories validation
+export const createSoftwareCategoryValidation: ValidationChain[] = [
+  body('title')
+    .notEmpty()
+    .withMessage('Title is required')
+    .isLength({ max: 20, min: 1 })
+    .withMessage('Title must contain from 1 to 20 characters')
+];
+
+export const editSoftwareCategoryValidation: ValidationChain[] = [
+  body('title')
+    .notEmpty()
+    .withMessage('Title is required')
+    .isLength({ max: 20, min: 1 })
+    .withMessage('Title must contain from 1 to 20 characters')
+];
