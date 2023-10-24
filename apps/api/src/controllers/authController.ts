@@ -122,6 +122,7 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
+// Get me
 export const getMe = async (req: Request, res: Response) => {
   try {
     const { userId } = req.body;
@@ -157,6 +158,7 @@ export const getMe = async (req: Request, res: Response) => {
   }
 };
 
+// Change password
 export const changePassword = async (req: Request, res: Response) => {
   try {
     const errors = validationResult(req);

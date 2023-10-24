@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
 import { userControllers } from '@/controllers';
-import { pagination } from '@/middleware';
+import { editUserValidation, pagination } from '@/middleware';
 
 const router: Router = Router();
 
@@ -12,7 +12,7 @@ router.get('/', pagination, userControllers.getUsers);
 router.get('/:userId', userControllers.getUser);
 
 // Put user
-router.put('/:userId', userControllers.putUser);
+router.put('/:userId', editUserValidation, userControllers.putUser);
 
 // Delete user
 router.delete('/:userId', userControllers.deleteUser);
