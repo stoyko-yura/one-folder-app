@@ -12,7 +12,9 @@
     "start:api": "pnpm --filter='api' start",
     "start": "pnpm '/^start:/'",
     "db:generate": "pnpm --filter='database' db:generate",
-    "db:push": "pnpm --filter='database' db:push"
+    "db:push": "pnpm --filter='database' db:push",
+    "lint": "pnpm --filter='./apps/*' lint",
+    "lint:fix": "pnpm --filter='./apps/*' lint"
   },
   "license": "ISC",
   "devDependencies": {
