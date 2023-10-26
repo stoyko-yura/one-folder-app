@@ -10,83 +10,125 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// User model
 model User {
-  id        String    @id @default(uuid())
-  username  String    @unique
-  hash      String    @map("passwordHash")
-  email     String    @unique
-  role      Role      @default(USER)
-  folders   Folder[]
-  comments  Comment[]
-  createdAt DateTime  @default(now())
+  id String @id @default(uuid())
+
+  login String @unique
+  email String @unique
+  hash  String @map("passwordHash")
+
+  role Role @default(USER)
+
+  profile Profile?
+
+  folders  Folder[]
+  comments Comment[]
+
+  createdAt DateTime @default(now())
 
   @@map("users")
 }
 
+model Profile {
+  id       String  @id @default(uuid())
+  bio      String? @db.VarChar(200)
+  username String? @db.VarChar(24)
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @unique
+
+  @@map("profiles")
+}
+
+// Folder model
 model Folder {
-  id          String       @id @default(uuid())
+  id String @id @default(uuid())
+
+  title       String  @db.VarChar(24)
+  description String? @db.VarChar(200)
   image       String?
-  title       String
-  description String?
-  access      FolderAccess @default(PUBLIC)
-  software    Software[]
-  comments    Comment[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  author      User?        @relation(fields: [authorId], references: [id])
-  authorId    String?
+
+  author   User   @relation(fields: [authorId], references: [id])
+  authorId String
+
+  software Software[]
+  ratings  Rating[]
+  comments Comment[]
+
+  access FolderAccess @default(PUBLIC)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("folders")
 }
 
+// Software model
 model Software {
-  id                 String           @id @default(uuid())
-  icon               String?
-  title              String
-  url                String
-  rate               Rate             @relation(fields: [rateId], references: [id])
-  rateId             String
-  description        String?
-  category           SoftwareCategory @relation(fields: [softwareCategoryId], references: [id])
-  softwareCategoryId String
-  folder             Folder?          @relation(fields: [folderId], references: [id])
-  folderId           String?
-  createdAt          DateTime         @default(now())
+  id String @id @default(uuid())
+
+  name        String
+  url         String
+  icon        String?
+  description String? @db.VarChar(100)
+
+  folders            Folder[]
+  softwareCategories SoftwareCategory[]
+  ratings            Rating[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("software")
 }
 
+// Software category model
 model SoftwareCategory {
-  id       String     @id @default(uuid())
-  title    String
+  id   String @id @default(uuid())
+  name String @unique
+
   software Software[]
 
   @@map("softwareCategories")
 }
 
+// Comment model
 model Comment {
-  id        String   @id @default(uuid())
-  message   String?
-  rate      Rate     @relation(fields: [rateId], references: [id])
-  rateId    String
-  author    User     @relation(fields: [authorId], references: [id])
-  authorId  String
-  folder    Folder?  @relation(fields: [folderId], references: [id])
-  folderId  String
+  id String @id @default(uuid())
+
+  message String? @db.VarChar(200)
+
+  folders Folder[]
+  ratings Rating[]
+
+  author   User   @relation(fields: [authorId], references: [id])
+  authorId String
+
   createdAt DateTime @default(now())
 
   @@map("comments")
 }
 
-model Rate {
-  id       String     @id @default(uuid())
-  rate     Int
-  Comment  Comment[]
-  Software Software[]
+// Rating model
+model Rating {
+  id String @id @default(uuid())
 
-  @@map("rates")
+  rating Int @db.SmallInt
+
+  software   Software? @relation(fields: [softwareId], references: [id])
+  softwareId String?
+  folder     Folder?   @relation(fields: [folderId], references: [id])
+  folderId   String?
+  comment    Comment?  @relation(fields: [commentId], references: [id])
+  commentId  String?
+
+  createdAt DateTime @default(now())
+
+  @@map("ratings")
 }
 
+// Enums
 enum Role {
   USER
   ADMIN
