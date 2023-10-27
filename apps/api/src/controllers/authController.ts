@@ -7,8 +7,8 @@ import { config, dbClient } from '@/config';
 import { errorHandler } from '@/middleware';
 import { excludeFields } from '@/utils';
 
-// Login
-export const login = async (req: Request, res: Response) => {
+// Sign in
+export const signIn = async (req: Request, res: Response) => {
   try {
     const errors = validationResult(req);
 
@@ -19,11 +19,11 @@ export const login = async (req: Request, res: Response) => {
       });
     }
 
-    const { username, password } = req.body;
+    const { login, password } = req.body;
 
     const user = await dbClient.user.findUnique({
       where: {
-        username
+        login
       }
     });
 
@@ -58,8 +58,8 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-// Register
-export const register = async (req: Request, res: Response) => {
+// Sign up
+export const signUp = async (req: Request, res: Response) => {
   try {
     const errors = validationResult(req);
 
@@ -70,7 +70,7 @@ export const register = async (req: Request, res: Response) => {
       });
     }
 
-    const { username, email, password, role } = req.body;
+    const { email, login, bio, username, password } = req.body;
 
     const user = await dbClient.user.findFirst({
       where: {
@@ -79,7 +79,7 @@ export const register = async (req: Request, res: Response) => {
             email: { equals: email }
           },
           {
-            username: { equals: username }
+            login: { equals: login }
           }
         ]
       }
@@ -96,8 +96,13 @@ export const register = async (req: Request, res: Response) => {
       data: {
         email,
         hash: passwordHash,
-        role,
-        username
+        login,
+        profile: {
+          create: {
+            bio,
+            username
+          }
+        }
       }
     });
 

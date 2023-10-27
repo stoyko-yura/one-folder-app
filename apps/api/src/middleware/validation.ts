@@ -2,17 +2,17 @@ import type { ValidationChain } from 'express-validator';
 import { body } from 'express-validator';
 
 // Auth validation
-export const loginValidation: ValidationChain[] = [
-  body('username').notEmpty().withMessage('Enter username'),
-  body('password').notEmpty().withMessage('Enter password')
+export const signInValidation: ValidationChain[] = [
+  body('login').notEmpty().withMessage('Login is required'),
+  body('password').notEmpty().withMessage('Login is required')
 ];
 
-export const registerValidation: ValidationChain[] = [
-  body('username')
+export const signUpValidation: ValidationChain[] = [
+  body('login')
     .notEmpty()
-    .withMessage('Username is required')
+    .withMessage('Login is required')
     .isLength({ max: 24, min: 4 })
-    .withMessage('Username must contain from 4 to 24 characters'),
+    .withMessage('Login must contain from 4 to 24 characters'),
   body('email')
     .notEmpty()
     .withMessage('Email is required')

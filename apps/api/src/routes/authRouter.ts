@@ -4,17 +4,17 @@ import { authControllers } from '@/controllers';
 import {
   changePasswordValidation,
   checkAuth,
-  loginValidation,
-  registerValidation
+  signInValidation,
+  signUpValidation
 } from '@/middleware';
 
 const router: Router = Router();
 
-// Login
-router.post('/login', loginValidation, authControllers.login);
+// Sign in
+router.post('/sign-in', signInValidation, authControllers.signIn);
 
-// Register
-router.post('/register', registerValidation, authControllers.register);
+// Sign up
+router.post('/sign-up', signUpValidation, authControllers.signUp);
 
 // Get me
 router.get('/me', checkAuth, authControllers.getMe);
