@@ -11,7 +11,7 @@ export const getSoftwareCategories = async (req: Request, res: Response) => {
 
     const softwareCategories = await dbClient.softwareCategory.findMany({
       orderBy: {
-        title: 'asc'
+        name: 'asc'
       },
       skip: Number(pageIndex) * (Number(limit) || 10),
       take: Number(limit) || 10
@@ -40,12 +40,12 @@ export const getSoftwareCategories = async (req: Request, res: Response) => {
     };
 
     res.status(200).json({
-      message: 'Software categories loaded',
-      success: true,
-      totalSoftwareCategories,
-      totalPages,
       links,
-      softwareCategories
+      message: 'Software categories loaded',
+      softwareCategories,
+      success: true,
+      totalPages,
+      totalSoftwareCategories
     });
   } catch (error) {
     errorHandler(error as Error, res);
@@ -69,8 +69,8 @@ export const getSoftwareCategory = async (req: Request, res: Response) => {
 
     res.status(200).json({
       message: 'Software category loaded',
-      success: true,
-      softwareCategory
+      softwareCategory,
+      success: true
     });
   } catch (error) {
     errorHandler(error as Error, res);
@@ -89,26 +89,26 @@ export const postSoftwareCategory = async (req: Request, res: Response) => {
       });
     }
 
-    const { title } = req.body;
+    const { name } = req.body;
 
     const softwareCategory = await dbClient.softwareCategory.findFirst({
       where: {
-        title
+        name
       }
     });
 
     if (softwareCategory) {
-      return errorHandler(new Error('Software category with this title already exist'), res);
+      return errorHandler(new Error('Software category with this name already exist'), res);
     }
 
     const createdSoftwareCategory = await dbClient.softwareCategory.create({
-      data: { title }
+      data: { name }
     });
 
     res.status(200).json({
       message: 'Software category successfully created',
-      success: true,
-      softwareCategory: createdSoftwareCategory
+      softwareCategory: createdSoftwareCategory,
+      success: true
     });
   } catch (error) {
     errorHandler(error as Error, res);
@@ -118,7 +118,7 @@ export const postSoftwareCategory = async (req: Request, res: Response) => {
 // Put software category
 export const putSoftwareCategory = async (req: Request, res: Response) => {
   try {
-    const { title } = req.body;
+    const { name } = req.body;
     const { softwareCategoryId } = req.params;
 
     let softwareCategory = await dbClient.softwareCategory.findUnique({
@@ -133,7 +133,7 @@ export const putSoftwareCategory = async (req: Request, res: Response) => {
 
     softwareCategory = await dbClient.softwareCategory.findFirst({
       where: {
-        title
+        name
       }
     });
 
@@ -143,7 +143,7 @@ export const putSoftwareCategory = async (req: Request, res: Response) => {
 
     const editedSoftwareCategory = await dbClient.softwareCategory.update({
       data: {
-        title
+        name
       },
       where: {
         id: softwareCategoryId
@@ -152,8 +152,8 @@ export const putSoftwareCategory = async (req: Request, res: Response) => {
 
     res.status(200).json({
       message: 'Software category edited',
-      success: true,
-      softwareCategory: editedSoftwareCategory
+      softwareCategory: editedSoftwareCategory,
+      success: true
     });
   } catch (error) {
     errorHandler(error as Error, res);
