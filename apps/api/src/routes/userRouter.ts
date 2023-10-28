@@ -11,6 +11,12 @@ router.get('/', pagination, userControllers.getUsers);
 // Get user
 router.get('/:userId', userControllers.getUser);
 
+// Get user comments
+router.get('/:userId/comments', pagination, userControllers.getUserComments);
+
+// Get user folders
+router.get('/:userId/folders', pagination, userControllers.getUserFolders);
+
 // Put user
 router.put('/:userId', editUserValidation, userControllers.putUser);
 

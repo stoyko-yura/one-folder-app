@@ -35,7 +35,7 @@ model Profile {
   bio      String? @db.VarChar(200)
   username String? @db.VarChar(24)
 
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String @unique
 
   @@map("profiles")
@@ -99,11 +99,12 @@ model Comment {
 
   message String? @db.VarChar(200)
 
-  folders Folder[]
   ratings Rating[]
 
   author   User   @relation(fields: [authorId], references: [id])
   authorId String
+  folder   Folder @relation(fields: [folderId], references: [id])
+  folderId String
 
   createdAt DateTime @default(now())
 

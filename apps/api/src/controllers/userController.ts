@@ -10,6 +10,15 @@ export const getUsers = async (req: Request, res: Response) => {
     const { page, limit, pageIndex } = req.query;
 
     const users = await dbClient.user.findMany({
+      include: {
+        _count: {
+          select: {
+            comments: true,
+            folders: true
+          }
+        },
+        profile: true
+      },
       orderBy: {
         createdAt: 'asc'
       },
@@ -40,11 +49,11 @@ export const getUsers = async (req: Request, res: Response) => {
     };
 
     res.status(200).json({
+      links,
       message: 'Users loaded',
       success: true,
       totalPages,
       totalUsers,
-      links,
       users: excludeFields(users, ['hash'])
     });
   } catch (error) {
@@ -57,7 +66,20 @@ export const getUser = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
 
-    const user = await dbClient.user.findUnique({ where: { id: userId } });
+    const user = await dbClient.user.findUnique({
+      include: {
+        _count: {
+          select: {
+            comments: true,
+            folders: true
+          }
+        },
+        profile: true
+      },
+      where: {
+        id: userId
+      }
+    });
 
     if (!user) {
       return errorHandler(new Error(`User ${userId} not found`), res, 404);
@@ -73,13 +95,127 @@ export const getUser = async (req: Request, res: Response) => {
   }
 };
 
+// Get user comments
+export const getUserComments = async (req: Request, res: Response) => {
+  try {
+    const { page, limit, pageIndex } = req.query;
+    const { userId } = req.params;
+
+    const userComments = await dbClient.comment.findMany({
+      orderBy: {
+        createdAt: 'asc'
+      },
+      skip: Number(pageIndex) * (Number(limit) || 10),
+      take: Number(limit) || 10,
+      where: {
+        authorId: userId
+      }
+    });
+
+    if (!userComments.length) {
+      return errorHandler(new Error(`User's comments not found`), res, 404);
+    }
+
+    const totalUserComments = await dbClient.comment.findMany({
+      where: {
+        authorId: userId
+      }
+    });
+    const totalPages = Math.ceil(totalUserComments.length / Number(limit));
+
+    const links = {
+      next:
+        Number(page) < totalPages
+          ? `${req.protocol}://${req.headers.host}/api/users/${userId}/comments?page=${
+              Number(page) + 1
+            }&limit=${Number(limit)}`
+          : null,
+      previus:
+        Number(page) > 1
+          ? `${req.protocol}://${req.headers.host}/api/users/${userId}/comments?page=${
+              Number(page) - 1
+            }&limit=${Number(limit)}`
+          : null
+    };
+
+    res.status(200).json({
+      links,
+      message: "User's comments loaded",
+      success: true,
+      totalPages,
+      totalUserComments: totalUserComments.length,
+      userComments
+    });
+  } catch (error) {
+    errorHandler(error as Error, res);
+  }
+};
+
+// Get user folders
+export const getUserFolders = async (req: Request, res: Response) => {
+  try {
+    const { page, limit, pageIndex } = req.query;
+    const { userId } = req.params;
+
+    const userFolders = await dbClient.folder.findMany({
+      orderBy: {
+        createdAt: 'asc'
+      },
+      skip: Number(pageIndex) * (Number(limit) || 10),
+      take: Number(limit) || 10,
+      where: {
+        authorId: userId
+      }
+    });
+
+    if (!userFolders.length) {
+      return errorHandler(new Error(`User's folders not found`), res, 404);
+    }
+
+    const totalUserFolders = await dbClient.folder.findMany({
+      where: {
+        authorId: userId
+      }
+    });
+    const totalPages = Math.ceil(totalUserFolders.length / Number(limit));
+
+    const links = {
+      next:
+        Number(page) < totalPages
+          ? `${req.protocol}://${req.headers.host}/api/users/${userId}/folders?page=${
+              Number(page) + 1
+            }&limit=${Number(limit)}`
+          : null,
+      previus:
+        Number(page) > 1
+          ? `${req.protocol}://${req.headers.host}/api/users/${userId}/folders?page=${
+              Number(page) - 1
+            }&limit=${Number(limit)}`
+          : null
+    };
+
+    res.status(200).json({
+      links,
+      message: "User's folders loaded",
+      success: true,
+      totalPages,
+      totalUserFolders: totalUserFolders.length,
+      userFolders
+    });
+  } catch (error) {
+    errorHandler(error as Error, res);
+  }
+};
+
 // Put user
 export const putUser = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
-    const { username, role, email } = req.body;
+    const { email, login, bio, username, role } = req.body;
 
-    const user = await dbClient.user.findUnique({ where: { id: userId } });
+    const user = await dbClient.user.findUnique({
+      where: { id: userId }
+    });
 
     if (!user) {
       return errorHandler(new Error(`User ${userId} not found`), res, 404);
@@ -88,8 +224,23 @@ export const putUser = async (req: Request, res: Response) => {
     const editedUser = await dbClient.user.update({
       data: {
         email,
-        role,
-        username
+        login,
+        profile: {
+          update: {
+            bio,
+            username
+          }
+        },
+        role
+      },
+      include: {
+        _count: {
+          select: {
+            comments: true,
+            folders: true
+          }
+        },
+        profile: true
       },
       where: { id: userId }
     });
@@ -115,7 +266,11 @@ export const deleteUser = async (req: Request, res: Response) => {
       return errorHandler(new Error(`User ${userId} not found`), res, 404);
     }
 
-    await dbClient.user.delete({ where: { id: userId } });
+    await dbClient.user.delete({
+      where: {
+        id: userId
+      }
+    });
 
     res.status(200).json({
       message: 'User deleted',

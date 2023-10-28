@@ -14,7 +14,6 @@ app.use(cors());
 // routes
 app.use('/api/users', routes.userRouter);
 app.use('/api/auth', routes.authRouter);
-app.use('/api/software-categories', routes.softwareCategoryRouter);
 app.use('/api/roles', routes.roleRouter);
 
 export default app;

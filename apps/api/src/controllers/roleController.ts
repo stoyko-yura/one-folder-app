@@ -10,8 +10,8 @@ export const getRoles = async (req: Request, res: Response) => {
 
     res.status(200).json({
       message: 'Roles loaded',
-      success: true,
-      roles
+      roles,
+      success: true
     });
   } catch (error) {
     errorHandler(error as Error, res);
