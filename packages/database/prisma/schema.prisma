@@ -68,10 +68,11 @@ model Folder {
 model Software {
   id String @id @default(uuid())
 
-  name        String
-  url         String
-  icon        String?
-  description String? @db.VarChar(100)
+  name          String
+  url           String
+  icon          String?
+  description   String? @db.VarChar(100)
+  averageRating Int     @default(0) @db.SmallInt
 
   folders            Folder[]
   softwareCategories SoftwareCategory[]
