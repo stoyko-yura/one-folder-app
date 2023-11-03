@@ -101,6 +101,16 @@ export const getUserComments = async (req: Request, res: Response) => {
     const { page, limit, pageIndex } = req.query;
     const { userId } = req.params;
 
+    const user = await dbClient.user.findUnique({
+      where: {
+        id: userId
+      }
+    });
+
+    if (!user) {
+      return errorHandler(new Error(`User ${userId}`), res, 404);
+    }
+
     const userComments = await dbClient.comment.findMany({
       orderBy: {
         createdAt: 'asc'
@@ -116,12 +126,14 @@ export const getUserComments = async (req: Request, res: Response) => {
       return errorHandler(new Error(`User's comments not found`), res, 404);
     }
 
-    const totalUserComments = await dbClient.comment.findMany({
-      where: {
-        authorId: userId
-      }
-    });
-    const totalPages = Math.ceil(totalUserComments.length / Number(limit));
+    const totalUserComments = (
+      await dbClient.comment.findMany({
+        where: {
+          authorId: userId
+        }
+      })
+    ).length;
+    const totalPages = Math.ceil(totalUserComments / Number(limit));
 
     const links = {
       next:
@@ -143,7 +155,7 @@ export const getUserComments = async (req: Request, res: Response) => {
       message: "User's comments loaded",
       success: true,
       totalPages,
-      totalUserComments: totalUserComments.length,
+      totalUserComments,
       userComments
     });
   } catch (error) {
@@ -156,6 +168,16 @@ export const getUserFolders = async (req: Request, res: Response) => {
   try {
     const { page, limit, pageIndex } = req.query;
     const { userId } = req.params;
+
+    const user = await dbClient.user.findUnique({
+      where: {
+        id: userId
+      }
+    });
+
+    if (!user) {
+      return errorHandler(new Error(`User ${userId}`), res, 404);
+    }
 
     const userFolders = await dbClient.folder.findMany({
       orderBy: {
