@@ -26,6 +26,7 @@ model User {
   comments Comment[]
 
   createdAt DateTime @default(now())
+  Rating    Rating[]
 
   @@map("users")
 }
@@ -45,9 +46,10 @@ model Profile {
 model Folder {
   id String @id @default(uuid())
 
-  title       String  @db.VarChar(24)
-  description String? @db.VarChar(200)
-  image       String?
+  title         String  @db.VarChar(24)
+  description   String? @db.VarChar(200)
+  image         String?
+  averageRating Int     @default(0) @db.SmallInt
 
   author   User   @relation(fields: [authorId], references: [id])
   authorId String
@@ -74,9 +76,9 @@ model Software {
   description   String? @db.VarChar(100)
   averageRating Int     @default(0) @db.SmallInt
 
-  folders            Folder[]
-  softwareCategories SoftwareCategory[]
-  ratings            Rating[]
+  folders    Folder[]
+  categories Category[]
+  ratings    Rating[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -84,26 +86,27 @@ model Software {
   @@map("software")
 }
 
-// Software category model
-model SoftwareCategory {
+// Category model
+model Category {
   id   String @id @default(uuid())
   name String @unique
 
   software Software[]
 
-  @@map("softwareCategories")
+  @@map("categories")
 }
 
 // Comment model
 model Comment {
   id String @id @default(uuid())
 
-  message String? @db.VarChar(200)
+  message       String? @db.VarChar(200)
+  averageRating Int     @default(0) @db.SmallInt
 
   ratings Rating[]
 
-  author   User   @relation(fields: [authorId], references: [id])
-  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId String @unique
   folder   Folder @relation(fields: [folderId], references: [id])
   folderId String
 
@@ -118,6 +121,8 @@ model Rating {
 
   rating Int @db.SmallInt
 
+  author     User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId   String    @unique
   software   Software? @relation(fields: [softwareId], references: [id])
   softwareId String?
   folder     Folder?   @relation(fields: [folderId], references: [id])
