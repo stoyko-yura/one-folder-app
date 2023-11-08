@@ -1,5 +1,5 @@
 export * from './authRouter';
+export * from './categoryRouter';
 export * from './roleRouter';
-export * from './softwareCategoryRouter';
 export * from './softwareRouter';
 export * from './userRouter';
