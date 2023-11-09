@@ -100,7 +100,7 @@ export const postRating = async (req: Request, res: Response) => {
 
     await findEntityById(entityName, entityId, res);
 
-    const existRating = await dbClient.rating.findUnique({
+    const existRating = await dbClient.rating.findFirst({
       where: {
         authorId: userId,
         commentId,

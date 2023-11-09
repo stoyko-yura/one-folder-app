@@ -122,7 +122,7 @@ model Rating {
   rating Int @db.SmallInt
 
   author     User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  authorId   String    @unique
+  authorId   String
   software   Software? @relation(fields: [softwareId], references: [id])
   softwareId String?
   folder     Folder?   @relation(fields: [folderId], references: [id])

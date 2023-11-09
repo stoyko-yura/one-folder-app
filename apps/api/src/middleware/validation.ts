@@ -48,11 +48,11 @@ export const changePasswordValidation: ValidationChain[] = [
 
 // User validation
 export const editUserValidation: ValidationChain[] = [
-  body('username')
+  body('login')
     .notEmpty()
-    .withMessage('Username is required')
+    .withMessage('Login is required')
     .isLength({ max: 24, min: 4 })
-    .withMessage('Username must contain from 4 to 24 characters'),
+    .withMessage('Login must contain from 4 to 24 characters'),
   body('email')
     .notEmpty()
     .withMessage('Email is required')
@@ -60,19 +60,19 @@ export const editUserValidation: ValidationChain[] = [
     .withMessage('Wrong email format')
 ];
 
-// Software categories validation
-export const createSoftwareCategoryValidation: ValidationChain[] = [
-  body('title')
+// Categories validation
+export const createCategoryValidation: ValidationChain[] = [
+  body('name')
     .notEmpty()
-    .withMessage('Title is required')
+    .withMessage('Name is required')
     .isLength({ max: 20, min: 1 })
-    .withMessage('Title must contain from 1 to 20 characters')
+    .withMessage('Name must contain from 1 to 20 characters')
 ];
 
-export const editSoftwareCategoryValidation: ValidationChain[] = [
-  body('title')
+export const editCategoryValidation: ValidationChain[] = [
+  body('name')
     .notEmpty()
-    .withMessage('Title is required')
+    .withMessage('Name is required')
     .isLength({ max: 20, min: 1 })
-    .withMessage('Title must contain from 1 to 20 characters')
+    .withMessage('Name must contain from 1 to 20 characters')
 ];

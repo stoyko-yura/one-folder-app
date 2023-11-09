@@ -14,6 +14,7 @@ app.use(cors());
 // routes
 app.use('/api/users', routes.userRouter);
 app.use('/api/auth', routes.authRouter);
+app.use('/api/folders', routes.folderRouter);
 app.use('/api/ratings', routes.ratingRouter);
 app.use('/api/roles', routes.roleRouter);
 app.use('/api/categories', routes.categoryRouter);
