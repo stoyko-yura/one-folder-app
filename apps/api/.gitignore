@@ -1,0 +1,12 @@
+# dependencies
+node_modules
+
+.eslintrc.cjs
+.prettierrc
+
+# app
+dist
+
+# local env files
+.env
+.env.local

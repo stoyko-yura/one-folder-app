@@ -1,0 +1,9 @@
+# dependencies
+node_modules
+
+# app
+dist
+
+# local env files
+.env
+.env.local
