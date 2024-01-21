@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
 import { softwareControllers } from '@/controllers';
-import { pagination } from '@/middleware';
+import { pagination, postSoftwareValidation, putSoftwareValidation } from '@/middleware';
 
 const router: Router = Router();
 
@@ -11,22 +11,22 @@ router.get('/', pagination, softwareControllers.getSoftwares);
 // Get software
 router.get('/:softwareId', softwareControllers.getSoftware);
 
-// Get software folders
+// Get software's folders
 router.get('/:softwareId/folders', pagination, softwareControllers.getSoftwareFolders);
 
-// Get software ratings
+// Get software's ratings
 router.get('/:softwareId/ratings', pagination, softwareControllers.getSoftwareRatings);
 
-// Get software categories
+// Get software's categories
 router.get('/:softwareId/categories', pagination, softwareControllers.getSoftwareCategories);
 
 // Post software
-router.post('/', softwareControllers.postSoftware);
+router.post('/', postSoftwareValidation, softwareControllers.postSoftware);
 
 // Put software
-router.put('/:softwareId', softwareControllers.putSoftware);
+router.put('/:softwareId', putSoftwareValidation, softwareControllers.putSoftware);
 
 // Delete software
 router.delete('/:softwareId', softwareControllers.deleteSoftware);
 
-export const softwareRouter = router;
+export const softwareRoutes = router;

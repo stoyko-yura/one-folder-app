@@ -12,12 +12,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
 // routes
-app.use('/api/users', routes.userRouter);
-app.use('/api/auth', routes.authRouter);
-app.use('/api/folders', routes.folderRouter);
-app.use('/api/ratings', routes.ratingRouter);
-app.use('/api/roles', routes.roleRouter);
-app.use('/api/categories', routes.categoryRouter);
-app.use('/api/software', routes.softwareRouter);
+app.use('/api/users', routes.userRoutes);
+app.use('/api/auth', routes.authRoutes);
+app.use('/api/folders', routes.folderRoutes);
+app.use('/api/folder-accesses', routes.folderAccessRoutes);
+app.use('/api/ratings', routes.ratingRoutes);
+app.use('/api/roles', routes.roleRoutes);
+app.use('/api/categories', routes.categoryRoutes);
+app.use('/api/software', routes.softwareRoutes);
 
 export default app;

@@ -97,7 +97,7 @@ export const getSoftware = async (req: Request, res: Response) => {
   }
 };
 
-// Get software folders
+// Get software's folders
 export const getSoftwareFolders = async (req: Request, res: Response) => {
   try {
     const { page, limit, pageIndex } = req.query;
@@ -173,7 +173,7 @@ export const getSoftwareFolders = async (req: Request, res: Response) => {
   }
 };
 
-// Get software ratings
+// Get software's ratings
 export const getSoftwareRatings = async (req: Request, res: Response) => {
   try {
     const { page, limit, pageIndex } = req.query;
@@ -241,7 +241,7 @@ export const getSoftwareRatings = async (req: Request, res: Response) => {
   }
 };
 
-// Get software categories
+// Get software's categories
 export const getSoftwareCategories = async (req: Request, res: Response) => {
   try {
     const { page, limit, pageIndex } = req.query;
@@ -351,11 +351,14 @@ export const postSoftware = async (req: Request, res: Response) => {
         icon,
         name,
         url
+      },
+      include: {
+        categories: true
       }
     });
 
     res.status(200).json({
-      message: 'Folder successfully created',
+      message: 'Software successfully created',
       software: createdSoftware,
       success: true
     });
@@ -367,8 +370,17 @@ export const postSoftware = async (req: Request, res: Response) => {
 // Put software
 export const putSoftware = async (req: Request, res: Response) => {
   try {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(500).json({
+        errors: errors.array(),
+        success: false
+      });
+    }
+
     const { softwareId } = req.params;
-    const { description, icon, name, categories, url } = req.body;
+    const { description, icon, name, url } = req.body;
 
     const software = await dbClient.software.findUnique({
       where: {
@@ -382,14 +394,8 @@ export const putSoftware = async (req: Request, res: Response) => {
 
     const editedSoftware = await dbClient.software.update({
       data: {
-        categories: {
-          connectOrCreate: categories.map((category: string) => ({
-            create: { name: category },
-            where: { name: category }
-          }))
-        },
-        description,
-        icon,
+        description: description || null,
+        icon: icon || null,
         name,
         url
       },

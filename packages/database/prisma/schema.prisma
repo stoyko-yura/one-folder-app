@@ -51,8 +51,8 @@ model Folder {
   image         String?
   averageRating Int     @default(0) @db.SmallInt
 
-  author   User   @relation(fields: [authorId], references: [id])
-  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId String @unique
 
   software Software[]
   ratings  Rating[]
@@ -107,7 +107,7 @@ model Comment {
 
   author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId String @unique
-  folder   Folder @relation(fields: [folderId], references: [id])
+  folder   Folder @relation(fields: [folderId], references: [id], onDelete: Cascade)
   folderId String
 
   createdAt DateTime @default(now())
@@ -123,11 +123,11 @@ model Rating {
 
   author     User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId   String
-  software   Software? @relation(fields: [softwareId], references: [id])
+  software   Software? @relation(fields: [softwareId], references: [id], onDelete: Cascade)
   softwareId String?
-  folder     Folder?   @relation(fields: [folderId], references: [id])
+  folder     Folder?   @relation(fields: [folderId], references: [id], onDelete: Cascade)
   folderId   String?
-  comment    Comment?  @relation(fields: [commentId], references: [id])
+  comment    Comment?  @relation(fields: [commentId], references: [id], onDelete: Cascade)
   commentId  String?
 
   createdAt DateTime @default(now())

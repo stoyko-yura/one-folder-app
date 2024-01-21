@@ -1,4 +1,4 @@
-import './lib/aliases';
+import './libs/aliases';
 
 import { config } from '@/config';
 import app from '@/root/app';

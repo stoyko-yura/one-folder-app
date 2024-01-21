@@ -3,14 +3,14 @@ import type { Request, Response } from 'express';
 import { dbEnums } from '@/config';
 import { errorHandler } from '@/middleware';
 
-// Get roles
-export const getRoles = (req: Request, res: Response) => {
+// Get folder's accesses
+export const getFolderAccesses = (req: Request, res: Response) => {
   try {
-    const { roles } = dbEnums;
+    const { accesses } = dbEnums;
 
     res.status(200).json({
-      message: 'Roles loaded',
-      roles,
+      accesses,
+      message: 'Accesses loaded',
       success: true
     });
   } catch (error) {

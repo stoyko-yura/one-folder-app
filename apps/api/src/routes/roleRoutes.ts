@@ -7,4 +7,4 @@ const router: Router = Router();
 // Get roles
 router.get('/', roleControllers.getRoles);
 
-export const roleRouter = router;
+export const roleRoutes = router;

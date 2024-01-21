@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import { validationResult } from 'express-validator';
 
 import { dbClient } from '@/config';
 import { errorHandler } from '@/middleware';
@@ -95,7 +96,7 @@ export const getUser = async (req: Request, res: Response) => {
   }
 };
 
-// Get user comments
+// Get user's comments
 export const getUserComments = async (req: Request, res: Response) => {
   try {
     const { page, limit, pageIndex } = req.query;
@@ -163,7 +164,7 @@ export const getUserComments = async (req: Request, res: Response) => {
   }
 };
 
-// Get user folders
+// Get user's folders
 export const getUserFolders = async (req: Request, res: Response) => {
   try {
     const { page, limit, pageIndex } = req.query;
@@ -232,6 +233,15 @@ export const getUserFolders = async (req: Request, res: Response) => {
 // Put user
 export const putUser = async (req: Request, res: Response) => {
   try {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(500).json({
+        errors: errors.array(),
+        success: false
+      });
+    }
+
     const { userId } = req.params;
     const { email, login, bio, username, role } = req.body;
 
@@ -249,20 +259,11 @@ export const putUser = async (req: Request, res: Response) => {
         login,
         profile: {
           update: {
-            bio,
-            username
+            bio: bio || null,
+            username: username || null
           }
         },
         role
-      },
-      include: {
-        _count: {
-          select: {
-            comments: true,
-            folders: true
-          }
-        },
-        profile: true
       },
       where: { id: userId }
     });

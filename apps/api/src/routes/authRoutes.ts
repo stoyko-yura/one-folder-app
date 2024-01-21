@@ -22,4 +22,4 @@ router.get('/me', checkAuth, authControllers.getMe);
 // Change password
 router.put('/change-password', checkAuth, changePasswordValidation, authControllers.changePassword);
 
-export const authRouter = router;
+export const authRoutes = router;

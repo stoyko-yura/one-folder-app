@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
 import { ratingControllers } from '@/controllers';
-import { pagination } from '@/middleware';
+import { pagination, postRatingValidation, putRatingValidation } from '@/middleware';
 
 const router: Router = Router();
 
@@ -12,12 +12,12 @@ router.get('/', pagination, ratingControllers.getRatings);
 router.get('/:ratingId', ratingControllers.getRating);
 
 // Post rating
-router.post('/', ratingControllers.postRating);
+router.post('/', postRatingValidation, ratingControllers.postRating);
 
 // Put rating
-router.put('/:ratingId', ratingControllers.putRating);
+router.put('/:ratingId', putRatingValidation, ratingControllers.putRating);
 
 // Delete rating
 router.delete('/:ratingId', ratingControllers.deleteRating);
 
-export const ratingRouter = router;
+export const ratingRoutes = router;

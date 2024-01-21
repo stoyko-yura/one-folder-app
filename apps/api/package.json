@@ -13,7 +13,7 @@
   "_moduleAliases": {
     "@/root": "dist",
     "@/config": "dist/config",
-    "@/lib": "dist/lib",
+    "@/libs": "dist/libs",
     "@/utils": "dist/utils",
     "@/controllers": "dist/controllers",
     "@/middleware": "dist/middleware",

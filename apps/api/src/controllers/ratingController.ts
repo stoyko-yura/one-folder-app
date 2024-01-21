@@ -1,8 +1,9 @@
 import type { Request, Response } from 'express';
+import { validationResult } from 'express-validator';
 
 import { dbClient } from '@/config';
 import { errorHandler } from '@/middleware';
-import { findEntityById } from '@/utils';
+import { capitalize, findEntityById } from '@/utils';
 
 // Get ratings
 export const getRatings = async (req: Request, res: Response) => {
@@ -77,7 +78,20 @@ export const getRating = async (req: Request, res: Response) => {
 // Post rating
 export const postRating = async (req: Request, res: Response) => {
   try {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(500).json({
+        errors: errors.array(),
+        success: false
+      });
+    }
+
     const { commentId, softwareId, folderId, userId, rating } = req.body;
+
+    if (!commentId && !folderId && !softwareId) {
+      return errorHandler(new Error('Entity id is required'), res, 500);
+    }
 
     const user = await dbClient.user.findUnique({
       where: {
@@ -90,6 +104,7 @@ export const postRating = async (req: Request, res: Response) => {
     }
 
     const entityId = commentId || folderId || softwareId;
+
     const entityNames = {
       [commentId]: 'comment',
       [folderId]: 'folder',
@@ -147,7 +162,7 @@ export const postRating = async (req: Request, res: Response) => {
 
     res.status(200).json({
       [entityName]: editedEntity,
-      message: 'Software rated',
+      message: `${capitalize(entityName)} rated`,
       rating: createdRating,
       success: true
     });
@@ -159,8 +174,25 @@ export const postRating = async (req: Request, res: Response) => {
 // Put rating
 export const putRating = async (req: Request, res: Response) => {
   try {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(500).json({
+        errors: errors.array(),
+        success: false
+      });
+    }
+
     const { ratingId } = req.params;
-    const { rating } = req.body;
+    const { userId, rating } = req.body;
+
+    const user = await dbClient.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user) {
+      return errorHandler(new Error(`User ${userId} not found`), res, 404);
+    }
 
     const existRating = await dbClient.rating.findUnique({
       where: {
@@ -181,19 +213,6 @@ export const putRating = async (req: Request, res: Response) => {
       }
     });
 
-    const aggregatedRating = await dbClient.rating.aggregate({
-      _avg: {
-        rating: true
-      },
-      where: {
-        OR: [
-          { commentId: existRating.commentId || '' },
-          { folderId: existRating.folderId || '' },
-          { softwareId: existRating.softwareId || '' }
-        ]
-      }
-    });
-
     const entityId = existRating.commentId || existRating.folderId || existRating.softwareId;
 
     if (!entityId) {
@@ -210,9 +229,24 @@ export const putRating = async (req: Request, res: Response) => {
 
     await findEntityById(entityName, entityId, res);
 
+    const aggregatedRating = await dbClient.rating.aggregate({
+      _avg: {
+        rating: true
+      },
+      where: {
+        OR: [
+          { commentId: entityId || '' },
+          { folderId: entityId || '' },
+          { softwareId: entityId || '' }
+        ]
+      }
+    });
+
+    const averageRating = Number(aggregatedRating._avg.rating);
+
     const editedEntity = await dbClient[entityName].update({
       data: {
-        averageRating: Number(aggregatedRating._avg.rating)
+        averageRating
       },
       where: {
         id: entityId
@@ -221,7 +255,7 @@ export const putRating = async (req: Request, res: Response) => {
 
     res.status(200).json({
       [entityName]: editedEntity,
-      message: 'Rating edited',
+      message: `${capitalize(entityName)}'s rating edited`,
       rating: editedRating,
       success: true
     });

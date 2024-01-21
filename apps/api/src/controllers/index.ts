@@ -1,5 +1,6 @@
 export * as authControllers from './authController';
 export * as categoryControllers from './categoryController';
+export * as folderAccessControllers from './folderAccessController';
 export * as folderControllers from './folderController';
 export * as ratingControllers from './ratingController';
 export * as roleControllers from './roleController';

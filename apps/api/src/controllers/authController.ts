@@ -86,7 +86,7 @@ export const signUp = async (req: Request, res: Response) => {
     });
 
     if (user) {
-      return errorHandler(Error('Username or email already exist'), res);
+      return errorHandler(Error('Login or email already exist'), res);
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -226,7 +226,7 @@ export const changePassword = async (req: Request, res: Response) => {
       message: 'Password successfully changed',
       success: true,
       token,
-      user: editedUser
+      user: excludeFields(editedUser, ['hash'])
     });
   } catch (error) {
     errorHandler(error as Error, res);

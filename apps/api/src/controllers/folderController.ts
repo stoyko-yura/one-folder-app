@@ -3,6 +3,7 @@ import { validationResult } from 'express-validator';
 
 import { dbClient } from '@/config';
 import { errorHandler } from '@/middleware';
+import { excludeFields } from '@/utils';
 
 // Get folders
 export const getFolders = async (req: Request, res: Response) => {
@@ -89,7 +90,7 @@ export const getFolder = async (req: Request, res: Response) => {
     }
 
     res.status(200).json({
-      folder,
+      folder: excludeFields(folder, ['author.hash']),
       message: 'Folder loaded',
       success: true
     });
@@ -98,7 +99,7 @@ export const getFolder = async (req: Request, res: Response) => {
   }
 };
 
-// Get folder comments
+// Get folder's comments
 export const getFolderComments = async (req: Request, res: Response) => {
   try {
     const { page, limit, pageIndex } = req.query;
@@ -164,7 +165,7 @@ export const getFolderComments = async (req: Request, res: Response) => {
   }
 };
 
-// Get folder ratings
+// Get folder's ratings
 export const getFolderRatings = async (req: Request, res: Response) => {
   try {
     const { page, limit, pageIndex } = req.query;
@@ -217,7 +218,19 @@ export const getFolderRatings = async (req: Request, res: Response) => {
           : null
     };
 
+    const aggregatedRating = await dbClient.rating.aggregate({
+      _avg: {
+        rating: true
+      },
+      where: {
+        folderId
+      }
+    });
+
+    const averageRating = Number(aggregatedRating._avg.rating);
+
     res.status(200).json({
+      averageRating,
       folderRatings,
       links,
       message: "Folder's ratings loaded",
@@ -230,7 +243,7 @@ export const getFolderRatings = async (req: Request, res: Response) => {
   }
 };
 
-// Get folder software
+// Get folder's software
 export const getFolderSoftware = async (req: Request, res: Response) => {
   try {
     const { page, limit, pageIndex } = req.query;
@@ -316,7 +329,7 @@ export const postFolder = async (req: Request, res: Response) => {
       });
     }
 
-    const { image, title, description, access, softwareIds, authorId } = req.body;
+    const { image, title, description, access, authorId } = req.body;
 
     const user = await dbClient.user.findUnique({
       where: {
@@ -334,14 +347,9 @@ export const postFolder = async (req: Request, res: Response) => {
         authorId,
         description,
         image,
-        software: {
-          connect: softwareIds.map((softwareId: string) => ({ id: softwareId }))
-        },
         title
       }
     });
-
-    console.log(createdFolder);
 
     res.status(200).json({
       folder: createdFolder,
@@ -356,10 +364,22 @@ export const postFolder = async (req: Request, res: Response) => {
 // Put folder
 export const putFolder = async (req: Request, res: Response) => {
   try {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(500).json({
+        errors: errors.array(),
+        success: false
+      });
+    }
+
     const { folderId } = req.params;
-    const { image, title, description, access, software, authorId } = req.body;
+    const { image, title, description, access } = req.body;
 
     const folder = await dbClient.folder.findUnique({
+      include: {
+        software: true
+      },
       where: {
         id: folderId
       }
@@ -372,10 +392,8 @@ export const putFolder = async (req: Request, res: Response) => {
     const editedFolder = await dbClient.folder.update({
       data: {
         access,
-        authorId,
-        description,
-        image,
-        software,
+        description: description || null,
+        image: image || null,
         title
       },
       where: {
