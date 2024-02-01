@@ -2,7 +2,7 @@ import cors from 'cors';
 import type { Application } from 'express';
 import express from 'express';
 
-import * as routes from '@/routes';
+import * as routes from '@/root/routes';
 
 const app: Application = express();
 

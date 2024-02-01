@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 
 import { config, dbClient } from '@/config';
 import { errorHandler } from '@/middleware';
+import { userService } from '@/services';
 import { excludeFields } from '@/utils';
 
 // Sign in
@@ -21,11 +22,7 @@ export const signIn = async (req: Request, res: Response) => {
 
     const { login, password } = req.body;
 
-    const user = await dbClient.user.findUnique({
-      where: {
-        login
-      }
-    });
+    const user = await userService.findUserByLogin(login);
 
     if (!user) {
       return errorHandler(new Error('User not found'), res, 404);

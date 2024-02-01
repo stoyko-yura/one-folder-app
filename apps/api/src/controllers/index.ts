@@ -1,8 +1,8 @@
-export * as authControllers from './authController';
-export * as categoryControllers from './categoryController';
-export * as folderAccessControllers from './folderAccessController';
-export * as folderControllers from './folderController';
-export * as ratingControllers from './ratingController';
-export * as roleControllers from './roleController';
-export * as softwareControllers from './softwareController';
-export * as userControllers from './userController';
+export * as authControllers from './authControllers';
+export * as categoryControllers from './categoryControllers';
+export * as folderAccessControllers from './folderAccessControllers';
+export * as folderControllers from './folderControllers';
+export * as ratingControllers from './ratingControllers';
+export * as roleControllers from './roleControllers';
+export * as softwareControllers from './softwareControllers';
+export * as userControllers from './userControllers';
