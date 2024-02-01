@@ -1,11 +1,8 @@
-import bcrypt from 'bcrypt';
 import type { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
-import jwt from 'jsonwebtoken';
 
-import { config, dbClient } from '@/config';
 import { errorHandler } from '@/middleware';
-import { userService } from '@/services';
+import { authServices, userServices } from '@/services';
 import { excludeFields } from '@/utils';
 
 // Sign in
@@ -22,27 +19,19 @@ export const signIn = async (req: Request, res: Response) => {
 
     const { login, password } = req.body;
 
-    const user = await userService.findUserByLogin(login);
+    const user = await userServices.findUserByLogin(login);
 
     if (!user) {
       return errorHandler(new Error('User not found'), res, 404);
     }
 
-    const isValidPassword = await bcrypt.compare(password, user.hash);
+    const isValidPassword = await authServices.comparePassword(password, user.hash);
 
     if (!isValidPassword) {
       return errorHandler(new Error('Invalid username or password'), res, 400);
     }
 
-    const token = jwt.sign(
-      {
-        userId: user.id
-      },
-      config.SECRET_JWT,
-      {
-        expiresIn: '7d'
-      }
-    );
+    const token = authServices.generateToken({ userId: user.id }, { expiresIn: '7d' });
 
     res.status(200).json({
       message: 'Authorization successful',
@@ -69,49 +58,30 @@ export const signUp = async (req: Request, res: Response) => {
 
     const { email, login, bio, username, password } = req.body;
 
-    const user = await dbClient.user.findFirst({
-      where: {
-        OR: [
-          {
-            email: { equals: email }
-          },
-          {
-            login: { equals: login }
-          }
-        ]
-      }
+    const user = await userServices.findUserByEmailOrLogin({
+      email,
+      login
     });
 
     if (user) {
       return errorHandler(Error('Login or email already exist'), res);
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash(password, salt);
+    const passwordHash = await authServices.hashPassword(password);
 
-    const createdUser = await dbClient.user.create({
-      data: {
-        email,
-        hash: passwordHash,
-        login,
-        profile: {
-          create: {
-            bio,
-            username
-          }
+    const createdUser = await userServices.createUser({
+      email,
+      hash: passwordHash,
+      login,
+      profile: {
+        create: {
+          bio,
+          username
         }
       }
     });
 
-    const token = jwt.sign(
-      {
-        userId: createdUser.id
-      },
-      config.SECRET_JWT,
-      {
-        expiresIn: '7d'
-      }
-    );
+    const token = authServices.generateToken({ userId: createdUser.id }, { expiresIn: '7d' });
 
     res.status(200).json({
       message: 'Registration successful',
@@ -129,25 +99,13 @@ export const getMe = async (req: Request, res: Response) => {
   try {
     const { userId } = req.body;
 
-    const user = await dbClient.user.findUnique({
-      where: {
-        id: userId
-      }
-    });
+    const user = await userServices.findUserById(userId);
 
     if (!user) {
       return errorHandler(new Error('Something went wrong'), res);
     }
 
-    const token = jwt.sign(
-      {
-        userId: user.id
-      },
-      config.SECRET_JWT,
-      {
-        expiresIn: '7d'
-      }
-    );
+    const token = authServices.generateToken({ userId: user.id }, { expiresIn: '7d' });
 
     res.status(200).json({
       message: 'Authorization successful',
@@ -174,17 +132,13 @@ export const changePassword = async (req: Request, res: Response) => {
 
     const { userId, password, newPassword } = req.body;
 
-    const user = await dbClient.user.findUnique({
-      where: {
-        id: userId
-      }
-    });
+    const user = await userServices.findUserById(userId);
 
     if (!user) {
       return errorHandler(new Error(`User ${userId} not found`), res, 404);
     }
 
-    const isValidPassword = await bcrypt.compare(password, user.hash);
+    const isValidPassword = await authServices.comparePassword(password, user.hash);
 
     if (!isValidPassword) {
       return errorHandler(new Error('Invalid password'), res, 400);
@@ -197,27 +151,13 @@ export const changePassword = async (req: Request, res: Response) => {
       );
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash(newPassword, salt);
+    const passwordHash = await authServices.hashPassword(password);
 
-    const editedUser = await dbClient.user.update({
-      data: {
-        hash: passwordHash
-      },
-      where: {
-        id: userId
-      }
+    const editedUser = await userServices.updateUser(userId, {
+      hash: passwordHash
     });
 
-    const token = jwt.sign(
-      {
-        userId: user.id
-      },
-      config.SECRET_JWT,
-      {
-        expiresIn: '7d'
-      }
-    );
+    const token = authServices.generateToken({ userId: user.id }, { expiresIn: '7d' });
 
     res.status(200).json({
       message: 'Password successfully changed',
