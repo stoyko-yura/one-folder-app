@@ -26,3 +26,17 @@ export const pagination = (req: Request, res: Response, next: NextFunction) => {
     errorHandler(error as Error, res);
   }
 };
+
+export const getPaginationLinks = (
+  req: Request,
+  options: { limit: number; page: number; totalPages: number }
+) => {
+  const { limit, page, totalPages } = options;
+
+  const baseUrl = `${req.protocol}://${req.headers.host}${req.baseUrl}`;
+
+  return {
+    next: page < totalPages ? `${baseUrl}?page=${page + 1}&limit=${limit}` : null,
+    previus: page > 1 ? `${baseUrl}?page=${page - 1}&limit=${limit}` : null
+  };
+};

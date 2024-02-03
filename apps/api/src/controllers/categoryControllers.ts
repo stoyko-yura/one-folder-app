@@ -1,43 +1,31 @@
 import type { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 
-import { dbClient } from '@/config';
-import { errorHandler } from '@/middleware';
+import { errorHandler, getPaginationLinks } from '@/middleware';
+import { categoryServices } from '@/services';
 
 // Get categories
 export const getCategories = async (req: Request, res: Response) => {
   try {
     const { page, limit, pageIndex } = req.query;
 
-    const categories = await dbClient.category.findMany({
-      orderBy: {
-        name: 'asc'
-      },
-      skip: Number(pageIndex) * (Number(limit) || 10),
-      take: Number(limit) || 10
+    const categories = await categoryServices.findCategoriesWithPagination({
+      limit: Number(limit),
+      pageIndex: Number(pageIndex)
     });
 
-    if (!categories.length) {
+    if (!categories) {
       return errorHandler(new Error('Categories not found'), res, 404);
     }
 
-    const totalCategories = await dbClient.category.count();
+    const totalCategories = await categoryServices.getTotalCategories();
     const totalPages = Math.ceil(totalCategories / Number(limit));
 
-    const links = {
-      next:
-        Number(page) < totalPages
-          ? `${req.protocol}://${req.headers.host}/api/categories?page=${
-              Number(page) + 1
-            }&limit=${Number(limit)}`
-          : null,
-      previus:
-        Number(page) > 1
-          ? `${req.protocol}://${req.headers.host}/api/categories?page=${
-              Number(page) - 1
-            }&limit=${Number(limit)}`
-          : null
-    };
+    const links = getPaginationLinks(req, {
+      limit: Number(limit),
+      page: Number(page),
+      totalPages
+    });
 
     res.status(200).json({
       categories,
@@ -57,11 +45,7 @@ export const getCategory = async (req: Request, res: Response) => {
   try {
     const { categoryId } = req.params;
 
-    const category = await dbClient.category.findUnique({
-      where: {
-        id: categoryId
-      }
-    });
+    const category = await categoryServices.findCateogryById(categoryId);
 
     if (!category) {
       return errorHandler(new Error('Category not found'), res, 404);
@@ -83,65 +67,35 @@ export const getCategorySoftwares = async (req: Request, res: Response) => {
     const { page, limit, pageIndex } = req.query;
     const { categoryId } = req.params;
 
-    const category = await dbClient.category.findUnique({
-      where: {
-        id: categoryId
-      }
-    });
+    const category = await categoryServices.findCateogryById(categoryId);
 
     if (!category) {
       return errorHandler(new Error(`Category ${categoryId} not found`), res, 404);
     }
 
-    const categorySoftares = await dbClient.software.findMany({
-      orderBy: {
-        name: 'asc'
-      },
-      skip: Number(pageIndex) * (Number(limit) || 10),
-      take: Number(limit) || 10,
-      where: {
-        categories: {
-          some: {
-            id: categoryId
-          }
-        }
+    const categorySoftwares = await categoryServices.findCategorySoftwareWithPagination(
+      categoryId,
+      {
+        limit: Number(limit),
+        pageIndex: Number(pageIndex)
       }
-    });
+    );
 
-    if (!categorySoftares.length) {
+    if (!categorySoftwares) {
       return errorHandler(new Error("Category's softwares not found"), res, 404);
     }
 
-    const totalCategorySoftwares = (
-      await dbClient.software.findMany({
-        where: {
-          categories: {
-            some: {
-              id: categoryId
-            }
-          }
-        }
-      })
-    ).length;
+    const totalCategorySoftwares = await categoryServices.getTotalCategorySoftwares(categoryId);
     const totalPages = Math.ceil(totalCategorySoftwares / Number(limit));
 
-    const links = {
-      next:
-        Number(page) < totalPages
-          ? `${req.protocol}://${req.headers.host}/api/categories/${categoryId}/software?page=${
-              Number(page) + 1
-            }&limit=${Number(limit)}`
-          : null,
-      previus:
-        Number(page) > 1
-          ? `${req.protocol}://${req.headers.host}/api/categories/${categoryId}/software?page=${
-              Number(page) - 1
-            }&limit=${Number(limit)}`
-          : null
-    };
+    const links = getPaginationLinks(req, {
+      limit: Number(limit),
+      page: Number(page),
+      totalPages
+    });
 
     res.status(200).json({
-      categorySoftares,
+      categorySoftwares,
       links,
       message: 'Software category softwares loaded',
       success: true,
@@ -167,18 +121,14 @@ export const postCategory = async (req: Request, res: Response) => {
 
     const { name } = req.body;
 
-    const category = await dbClient.category.findFirst({
-      where: {
-        name
-      }
-    });
+    const category = await categoryServices.findCategoryByName(name);
 
     if (category) {
       return errorHandler(new Error('Category with this name already exist'), res);
     }
 
-    const createdCategory = await dbClient.category.create({
-      data: { name }
+    const createdCategory = await categoryServices.createCategory({
+      name
     });
 
     res.status(200).json({
@@ -197,33 +147,20 @@ export const putCategory = async (req: Request, res: Response) => {
     const { name } = req.body;
     const { categoryId } = req.params;
 
-    let category = await dbClient.category.findUnique({
-      where: {
-        id: categoryId
-      }
-    });
+    let category = await categoryServices.findCateogryById(categoryId);
 
     if (!category) {
       return errorHandler(new Error(`Category ${categoryId} not found`), res, 404);
     }
 
-    category = await dbClient.category.findFirst({
-      where: {
-        name
-      }
-    });
+    category = await categoryServices.findCategoryByName(name);
 
     if (category) {
       return errorHandler(new Error('Category already exist'), res);
     }
 
-    const editedCategory = await dbClient.category.update({
-      data: {
-        name
-      },
-      where: {
-        id: categoryId
-      }
+    const editedCategory = await categoryServices.updateCategory(categoryId, {
+      name
     });
 
     res.status(200).json({
@@ -241,21 +178,13 @@ export const deleteCategory = async (req: Request, res: Response) => {
   try {
     const { categoryId } = req.params;
 
-    const category = await dbClient.category.findUnique({
-      where: {
-        id: categoryId
-      }
-    });
+    const category = await categoryServices.findCateogryById(categoryId);
 
     if (!category) {
       return errorHandler(new Error(`Category ${categoryId} not found`), res, 404);
     }
 
-    await dbClient.category.delete({
-      where: {
-        id: categoryId
-      }
-    });
+    await categoryServices.deleteCategoryById(categoryId);
 
     res.status(200).json({
       message: 'Category deleted',
