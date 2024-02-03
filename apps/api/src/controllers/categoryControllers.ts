@@ -11,6 +11,9 @@ export const getCategories = async (req: Request, res: Response) => {
 
     const categories = await categoryServices.findCategoriesWithPagination({
       limit: Number(limit),
+      orderBy: {
+        name: 'asc'
+      },
       pageIndex: Number(pageIndex)
     });
 
@@ -77,6 +80,9 @@ export const getCategorySoftwares = async (req: Request, res: Response) => {
       categoryId,
       {
         limit: Number(limit),
+        orderBy: {
+          name: 'asc'
+        },
         pageIndex: Number(pageIndex)
       }
     );

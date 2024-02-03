@@ -1,8 +1,8 @@
 import type { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 
-import { dbClient } from '@/config';
-import { errorHandler } from '@/middleware';
+import { errorHandler, getPaginationLinks } from '@/middleware';
+import { folderServices, userServices } from '@/services';
 import { excludeFields } from '@/utils';
 
 // Get folders
@@ -10,44 +10,22 @@ export const getFolders = async (req: Request, res: Response) => {
   try {
     const { page, limit, pageIndex } = req.query;
 
-    const folders = await dbClient.folder.findMany({
-      include: {
-        _count: {
-          select: {
-            comments: true,
-            ratings: true,
-            software: true
-          }
-        }
-      },
+    const folders = await folderServices.findFoldersWithPagination({
+      limit: Number(limit),
       orderBy: {
         createdAt: 'asc'
       },
-      skip: Number(pageIndex) * (Number(limit) || 10),
-      take: Number(limit) || 10
+      pageIndex: Number(pageIndex)
     });
 
-    if (!folders.length) {
+    if (!folders) {
       return errorHandler(new Error('Folders not found'), res, 404);
     }
 
-    const totalFolders = await dbClient.folder.count();
+    const totalFolders = await folderServices.getTotalFolders();
     const totalPages = Math.ceil(totalFolders / Number(limit));
 
-    const links = {
-      next:
-        Number(page) < totalPages
-          ? `${req.protocol}://${req.headers.host}/api/folders?page=${
-              Number(page) + 1
-            }&limit=${Number(limit)}`
-          : null,
-      previus:
-        Number(page) > 1
-          ? `${req.protocol}://${req.headers.host}/api/folders?page=${
-              Number(page) - 1
-            }&limit=${Number(limit)}`
-          : null
-    };
+    const links = getPaginationLinks(req, { limit: Number(limit), page: Number(page), totalPages });
 
     res.status(200).json({
       folders,
@@ -67,23 +45,7 @@ export const getFolder = async (req: Request, res: Response) => {
   try {
     const { folderId } = req.params;
 
-    const folder = await dbClient.folder.findUnique({
-      include: {
-        _count: {
-          select: {
-            comments: true,
-            ratings: true,
-            software: true
-          }
-        },
-        author: true,
-        comments: true,
-        software: true
-      },
-      where: {
-        id: folderId
-      }
-    });
+    const folder = await folderServices.findFolderById(folderId);
 
     if (!folder) {
       return errorHandler(new Error(`Folder ${folderId} not found`), res, 404);
@@ -105,52 +67,28 @@ export const getFolderComments = async (req: Request, res: Response) => {
     const { page, limit, pageIndex } = req.query;
     const { folderId } = req.params;
 
-    const folder = await dbClient.folder.findUnique({
-      where: {
-        id: folderId
-      }
-    });
+    const folder = await folderServices.findFolderById(folderId);
 
     if (!folder) {
       return errorHandler(new Error(`Folder ${folderId} not found`), res, 404);
     }
 
-    const folderComments = await dbClient.comment.findMany({
+    const folderComments = await folderServices.findFolderCommentsWithPaginations(folderId, {
+      limit: Number(limit),
       orderBy: {
         createdAt: 'asc'
       },
-      skip: Number(pageIndex) * (Number(limit) || 10),
-      take: Number(limit) || 10,
-      where: {
-        folderId
-      }
+      pageIndex: Number(pageIndex)
     });
 
-    if (!folderComments.length) {
+    if (!folderComments) {
       return errorHandler(new Error("Folder's comments not found"), res, 404);
     }
 
-    const totalFolderComments = await dbClient.comment.count({
-      where: {
-        folderId
-      }
-    });
+    const totalFolderComments = await folderServices.getTotalFolderComments(folderId);
     const totalPages = Math.ceil(totalFolderComments / Number(limit));
 
-    const links = {
-      next:
-        Number(page) < totalPages
-          ? `${req.protocol}://${req.headers.host}/api/folders/${folderId}/comments?page=${
-              Number(page) + 1
-            }&limit=${Number(limit)}`
-          : null,
-      previus:
-        Number(page) > 1
-          ? `${req.protocol}://${req.headers.host}/api/folders/${folderId}/comments?page=${
-              Number(page) - 1
-            }&limit=${Number(limit)}`
-          : null
-    };
+    const links = getPaginationLinks(req, { limit: Number(limit), page: Number(page), totalPages });
 
     res.status(200).json({
       folderComments,
@@ -171,63 +109,30 @@ export const getFolderRatings = async (req: Request, res: Response) => {
     const { page, limit, pageIndex } = req.query;
     const { folderId } = req.params;
 
-    const folder = await dbClient.folder.findUnique({
-      where: {
-        id: folderId
-      }
-    });
+    const folder = await folderServices.findFolderById(folderId);
 
     if (!folder) {
       return errorHandler(new Error(`Folder ${folderId} not found`), res, 404);
     }
 
-    const folderRatings = await dbClient.rating.findMany({
+    const folderRatings = await folderServices.findFolderRatingsWithPagination(folderId, {
+      limit: Number(limit),
       orderBy: {
         createdAt: 'asc'
       },
-      skip: Number(pageIndex) * (Number(limit) || 10),
-      take: Number(limit) || 10,
-      where: {
-        folderId
-      }
+      pageIndex: Number(pageIndex)
     });
 
-    if (!folderRatings.length) {
+    if (!folderRatings) {
       return errorHandler(new Error("Folder's ratings not found"), res, 404);
     }
 
-    const totalFolderRatings = await dbClient.rating.count({
-      where: {
-        folderId
-      }
-    });
+    const totalFolderRatings = await folderServices.getTotalFolderRatings(folderId);
     const totalPages = Math.ceil(totalFolderRatings / Number(limit));
 
-    const links = {
-      next:
-        Number(page) < totalPages
-          ? `${req.protocol}://${req.headers.host}/api/folders/${folderId}/ratings?page=${
-              Number(page) + 1
-            }&limit=${Number(limit)}`
-          : null,
-      previus:
-        Number(page) > 1
-          ? `${req.protocol}://${req.headers.host}/api/folders/${folderId}/ratings?page=${
-              Number(page) - 1
-            }&limit=${Number(limit)}`
-          : null
-    };
+    const links = getPaginationLinks(req, { limit: Number(limit), page: Number(page), totalPages });
 
-    const aggregatedRating = await dbClient.rating.aggregate({
-      _avg: {
-        rating: true
-      },
-      where: {
-        folderId
-      }
-    });
-
-    const averageRating = Number(aggregatedRating._avg.rating);
+    const averageRating = await folderServices.getAverageFolderRating(folderId);
 
     res.status(200).json({
       averageRating,
@@ -249,60 +154,28 @@ export const getFolderSoftware = async (req: Request, res: Response) => {
     const { page, limit, pageIndex } = req.query;
     const { folderId } = req.params;
 
-    const folder = await dbClient.folder.findUnique({
-      where: {
-        id: folderId
-      }
-    });
+    const folder = await folderServices.findFolderById(folderId);
 
     if (!folder) {
       return errorHandler(new Error(`Folder ${folderId} not found`), res, 404);
     }
 
-    const folderSoftware = await dbClient.software.findMany({
+    const folderSoftware = await folderServices.findFolderSoftwareWithPagination(folderId, {
+      limit: Number(limit),
       orderBy: {
         createdAt: 'asc'
       },
-      skip: Number(pageIndex) * (Number(limit) || 10),
-      take: Number(limit) || 10,
-      where: {
-        folders: {
-          some: {
-            id: folderId
-          }
-        }
-      }
+      pageIndex: Number(pageIndex)
     });
 
-    if (!folderSoftware.length) {
+    if (!folderSoftware) {
       return errorHandler(new Error("Folder's ratings not found"), res, 404);
     }
 
-    const totalFolderSoftware = await dbClient.software.count({
-      where: {
-        folders: {
-          some: {
-            id: folderId
-          }
-        }
-      }
-    });
+    const totalFolderSoftware = await folderServices.getTotalFolderSoftware(folderId);
     const totalPages = Math.ceil(totalFolderSoftware / Number(limit));
 
-    const links = {
-      next:
-        Number(page) < totalPages
-          ? `${req.protocol}://${req.headers.host}/api/folders/${folderId}/software?page=${
-              Number(page) + 1
-            }&limit=${Number(limit)}`
-          : null,
-      previus:
-        Number(page) > 1
-          ? `${req.protocol}://${req.headers.host}/api/folders/${folderId}/software?page=${
-              Number(page) - 1
-            }&limit=${Number(limit)}`
-          : null
-    };
+    const links = getPaginationLinks(req, { limit: Number(limit), page: Number(page), totalPages });
 
     res.status(200).json({
       folderSoftware,
@@ -331,24 +204,22 @@ export const postFolder = async (req: Request, res: Response) => {
 
     const { image, title, description, access, authorId } = req.body;
 
-    const user = await dbClient.user.findUnique({
-      where: {
-        id: authorId
-      }
-    });
+    const user = await userServices.findUserById(authorId);
 
     if (!user) {
       return errorHandler(new Error(`User ${authorId} not found`), res, 404);
     }
 
-    const createdFolder = await dbClient.folder.create({
-      data: {
-        access,
-        authorId,
-        description,
-        image,
-        title
-      }
+    const createdFolder = await folderServices.createFolder({
+      access,
+      author: {
+        connect: {
+          id: authorId
+        }
+      },
+      description,
+      image,
+      title
     });
 
     res.status(200).json({
@@ -376,29 +247,17 @@ export const putFolder = async (req: Request, res: Response) => {
     const { folderId } = req.params;
     const { image, title, description, access } = req.body;
 
-    const folder = await dbClient.folder.findUnique({
-      include: {
-        software: true
-      },
-      where: {
-        id: folderId
-      }
-    });
+    const folder = await folderServices.findFolderById(folderId);
 
     if (!folder) {
       return errorHandler(new Error(`Folder ${folderId} not found`), res, 404);
     }
 
-    const editedFolder = await dbClient.folder.update({
-      data: {
-        access,
-        description: description || null,
-        image: image || null,
-        title
-      },
-      where: {
-        id: folderId
-      }
+    const editedFolder = await folderServices.updateFolder(folderId, {
+      access,
+      description: description || null,
+      image: image || null,
+      title
     });
 
     res.status(200).json({
@@ -416,21 +275,13 @@ export const deleteFolder = async (req: Request, res: Response) => {
   try {
     const { folderId } = req.params;
 
-    const folder = await dbClient.folder.findUnique({
-      where: {
-        id: folderId
-      }
-    });
+    const folder = folderServices.findFolderById(folderId);
 
     if (!folder) {
       return errorHandler(new Error(`Folder ${folderId} not found`), res, 404);
     }
 
-    await dbClient.folder.delete({
-      where: {
-        id: folderId
-      }
-    });
+    await folderServices.deleteFolder(folderId);
 
     res.status(200).json({
       message: 'Folder deleted',
