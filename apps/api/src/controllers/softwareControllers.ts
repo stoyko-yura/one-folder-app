@@ -1,53 +1,30 @@
 import type { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 
-import { dbClient } from '@/config';
-import { errorHandler } from '@/middleware';
+import { errorHandler, getPaginationLinks } from '@/middleware';
+import { softwareServices } from '@/services';
 
 // Get softwares
 export const getSoftwares = async (req: Request, res: Response) => {
   try {
     const { page, limit, pageIndex } = req.query;
 
-    const software = await dbClient.software.findMany({
-      include: {
-        _count: {
-          select: {
-            categories: true,
-            folders: true,
-            ratings: true
-          }
-        },
-        categories: true
-      },
+    const software = await softwareServices.findSoftwareWithPagination({
+      limit: Number(limit),
       orderBy: {
         name: 'asc'
       },
-      skip: Number(pageIndex) * (Number(limit) || 10),
-      take: Number(limit) || 10
+      pageIndex: Number(pageIndex)
     });
 
-    if (!software.length) {
+    if (!software) {
       return errorHandler(new Error('Softwares not found'), res, 404);
     }
 
-    const totalSoftware = await dbClient.software.count();
+    const totalSoftware = await softwareServices.getTotalSoftware();
     const totalPages = Math.ceil(totalSoftware / Number(limit));
 
-    const links = {
-      next:
-        Number(page) < totalPages
-          ? `${req.protocol}://${req.headers.host}/api/software?page=${
-              Number(page) + 1
-            }&limit=${Number(limit)}`
-          : null,
-      previus:
-        Number(page) > 1
-          ? `${req.protocol}://${req.headers.host}/api/software?page=${
-              Number(page) - 1
-            }&limit=${Number(limit)}`
-          : null
-    };
+    const links = getPaginationLinks(req, { limit: Number(limit), page: Number(page), totalPages });
 
     res.status(200).json({
       links,
@@ -67,21 +44,7 @@ export const getSoftware = async (req: Request, res: Response) => {
   try {
     const { softwareId } = req.params;
 
-    const software = await dbClient.software.findUnique({
-      include: {
-        _count: {
-          select: {
-            categories: true,
-            folders: true,
-            ratings: true
-          }
-        },
-        categories: true
-      },
-      where: {
-        id: softwareId
-      }
-    });
+    const software = await softwareServices.findSoftwareById(softwareId);
 
     if (!software) {
       return errorHandler(new Error(`Software ${softwareId} not found`), res, 404);
@@ -103,62 +66,28 @@ export const getSoftwareFolders = async (req: Request, res: Response) => {
     const { page, limit, pageIndex } = req.query;
     const { softwareId } = req.params;
 
-    const software = await dbClient.software.findUnique({
-      where: {
-        id: softwareId
-      }
-    });
+    const software = await softwareServices.findSoftwareById(softwareId);
 
     if (!software) {
       return errorHandler(new Error(`Software ${softwareId} not found`), res, 404);
     }
 
-    const softwareFolders = await dbClient.folder.findMany({
+    const softwareFolders = await softwareServices.findSoftwareFoldersWithPagination(softwareId, {
+      limit: Number(limit),
       orderBy: {
-        createdAt: 'asc'
+        title: 'asc'
       },
-      skip: Number(pageIndex) * (Number(limit) || 10),
-      take: Number(limit) || 10,
-      where: {
-        software: {
-          some: {
-            id: softwareId
-          }
-        }
-      }
+      pageIndex: Number(pageIndex)
     });
 
-    if (!softwareFolders.length) {
+    if (!softwareFolders) {
       return errorHandler(new Error("Software's folders not found"), res, 404);
     }
 
-    const totalSoftwareFolders = (
-      await dbClient.folder.findMany({
-        where: {
-          software: {
-            some: {
-              id: softwareId
-            }
-          }
-        }
-      })
-    ).length;
+    const totalSoftwareFolders = await softwareServices.getTotalSoftwareFolders(softwareId);
     const totalPages = Math.ceil(totalSoftwareFolders / Number(limit));
 
-    const links = {
-      next:
-        Number(page) < totalPages
-          ? `${req.protocol}://${req.headers.host}/api/software/${softwareId}/folders?page=${
-              Number(page) + 1
-            }&limit=${Number(limit)}`
-          : null,
-      previus:
-        Number(page) > 1
-          ? `${req.protocol}://${req.headers.host}/api/software/${softwareId}/folders?page=${
-              Number(page) - 1
-            }&limit=${Number(limit)}`
-          : null
-    };
+    const links = getPaginationLinks(req, { limit: Number(limit), page: Number(page), totalPages });
 
     res.status(200).json({
       links,
@@ -179,54 +108,28 @@ export const getSoftwareRatings = async (req: Request, res: Response) => {
     const { page, limit, pageIndex } = req.query;
     const { softwareId } = req.params;
 
-    const software = await dbClient.software.findUnique({
-      where: {
-        id: softwareId
-      }
-    });
+    const software = await softwareServices.findSoftwareById(softwareId);
 
     if (!software) {
       return errorHandler(new Error(`Software ${softwareId} not found`), res, 404);
     }
 
-    const softwareRatings = await dbClient.rating.findMany({
+    const softwareRatings = await softwareServices.findSoftwareRatingsWithPagination(softwareId, {
+      limit: Number(limit),
       orderBy: {
         createdAt: 'asc'
       },
-      skip: Number(pageIndex) * (Number(limit) || 10),
-      take: Number(limit) || 10,
-      where: {
-        softwareId
-      }
+      pageIndex: Number(pageIndex)
     });
 
-    if (!softwareRatings.length) {
+    if (!softwareRatings) {
       return errorHandler(new Error("Software's ratings not found"), res, 404);
     }
 
-    const totalSoftwareRatings = (
-      await dbClient.rating.findMany({
-        where: {
-          softwareId
-        }
-      })
-    ).length;
+    const totalSoftwareRatings = await softwareServices.getTotalSoftwareRatings(softwareId);
     const totalPages = Math.ceil(totalSoftwareRatings / Number(limit));
 
-    const links = {
-      next:
-        Number(page) < totalPages
-          ? `${req.protocol}://${req.headers.host}/api/software/${softwareId}/ratings?page=${
-              Number(page) + 1
-            }&limit=${Number(limit)}`
-          : null,
-      previus:
-        Number(page) > 1
-          ? `${req.protocol}://${req.headers.host}/api/software/${softwareId}/ratings?page=${
-              Number(page) - 1
-            }&limit=${Number(limit)}`
-          : null
-    };
+    const links = getPaginationLinks(req, { limit: Number(limit), page: Number(page), totalPages });
 
     res.status(200).json({
       links,
@@ -247,60 +150,31 @@ export const getSoftwareCategories = async (req: Request, res: Response) => {
     const { page, limit, pageIndex } = req.query;
     const { softwareId } = req.params;
 
-    const software = await dbClient.software.findUnique({
-      where: {
-        id: softwareId
-      }
-    });
+    const software = await softwareServices.findSoftwareById(softwareId);
 
     if (!software) {
       return errorHandler(new Error(`Software ${softwareId} not found`), res, 404);
     }
 
-    const softwareCategories = await dbClient.category.findMany({
-      orderBy: {
-        name: 'asc'
-      },
-      skip: Number(pageIndex) * (Number(limit) || 10),
-      take: Number(limit) || 10,
-      where: {
-        software: {
-          some: {
-            id: softwareId
-          }
-        }
+    const softwareCategories = await softwareServices.findSoftwareCategoriesWithPagination(
+      softwareId,
+      {
+        limit: Number(limit),
+        orderBy: {
+          name: 'asc'
+        },
+        pageIndex: Number(pageIndex)
       }
-    });
+    );
 
-    if (!softwareCategories.length) {
+    if (!softwareCategories) {
       return errorHandler(new Error("Software's categories not found"), res, 404);
     }
 
-    const totalSoftwareCategories = (
-      await dbClient.category.findMany({
-        where: {
-          software: {
-            some: { id: softwareId }
-          }
-        }
-      })
-    ).length;
+    const totalSoftwareCategories = await softwareServices.getTotalSoftwareCategories(softwareId);
     const totalPages = Math.ceil(totalSoftwareCategories / Number(limit));
 
-    const links = {
-      next:
-        Number(page) < totalPages
-          ? `${req.protocol}://${req.headers.host}/api/software/${softwareId}/categories?page=${
-              Number(page) + 1
-            }&limit=${Number(limit)}`
-          : null,
-      previus:
-        Number(page) > 1
-          ? `${req.protocol}://${req.headers.host}/api/software/${softwareId}/categories?page=${
-              Number(page) - 1
-            }&limit=${Number(limit)}`
-          : null
-    };
+    const links = getPaginationLinks(req, { limit: Number(limit), page: Number(page), totalPages });
 
     res.status(200).json({
       links,
@@ -329,32 +203,23 @@ export const postSoftware = async (req: Request, res: Response) => {
 
     const { description, icon, name, categories, url } = req.body;
 
-    const software = await dbClient.software.findFirst({
-      where: {
-        name
-      }
-    });
+    const software = await softwareServices.findSoftwareByName(name);
 
     if (software) {
       return errorHandler(new Error(`Software ${name} is already exist`), res);
     }
 
-    const createdSoftware = await dbClient.software.create({
-      data: {
-        categories: {
-          connectOrCreate: categories.map((category: string) => ({
-            create: { name: category },
-            where: { name: category }
-          }))
-        },
-        description,
-        icon,
-        name,
-        url
+    const createdSoftware = await softwareServices.createSoftware({
+      categories: {
+        connectOrCreate: categories.map((category: string) => ({
+          create: { name: category },
+          where: { name: category }
+        }))
       },
-      include: {
-        categories: true
-      }
+      description,
+      icon,
+      name,
+      url
     });
 
     res.status(200).json({
@@ -382,26 +247,17 @@ export const putSoftware = async (req: Request, res: Response) => {
     const { softwareId } = req.params;
     const { description, icon, name, url } = req.body;
 
-    const software = await dbClient.software.findUnique({
-      where: {
-        id: softwareId
-      }
-    });
+    const software = await softwareServices.findSoftwareById(softwareId);
 
     if (!software) {
       return errorHandler(new Error(`Software ${softwareId} not found`), res, 404);
     }
 
-    const editedSoftware = await dbClient.software.update({
-      data: {
-        description: description || null,
-        icon: icon || null,
-        name,
-        url
-      },
-      where: {
-        id: softwareId
-      }
+    const editedSoftware = await softwareServices.updateSoftware(softwareId, {
+      description: description || null,
+      icon: icon || null,
+      name,
+      url
     });
 
     res.status(200).json({
@@ -419,21 +275,13 @@ export const deleteSoftware = async (req: Request, res: Response) => {
   try {
     const { softwareId } = req.params;
 
-    const software = await dbClient.software.findUnique({
-      where: {
-        id: softwareId
-      }
-    });
+    const software = await softwareServices.findSoftwareById(softwareId);
 
     if (!software) {
       return errorHandler(new Error(`Software ${softwareId} not found`), res, 404);
     }
 
-    await dbClient.software.delete({
-      where: {
-        id: softwareId
-      }
-    });
+    await softwareServices.deleteSoftware(softwareId);
 
     res.status(200).json({
       message: 'Software deleted',

@@ -84,7 +84,7 @@ export const findFolderCommentsWithPaginations = async (
 
 export const findFolderRatingsWithPagination = async (
   folderId: string,
-  options: PaginationOptions<Prisma.CommentOrderByWithAggregationInput> = {
+  options: PaginationOptions<Prisma.RatingOrderByWithAggregationInput> = {
     limit: 10,
     orderBy: {
       createdAt: 'asc'
@@ -110,7 +110,7 @@ export const findFolderRatingsWithPagination = async (
 
 export const findFolderSoftwareWithPagination = async (
   folderId: string,
-  options: PaginationOptions<Prisma.CommentOrderByWithAggregationInput> = {
+  options: PaginationOptions<Prisma.SoftwareOrderByWithAggregationInput> = {
     limit: 10,
     orderBy: {
       createdAt: 'asc'
