@@ -24,11 +24,7 @@ export const getCategories = async (req: Request, res: Response) => {
     const totalCategories = await categoryServices.getTotalCategories();
     const totalPages = Math.ceil(totalCategories / Number(limit));
 
-    const links = getPaginationLinks(req, {
-      limit: Number(limit),
-      page: Number(page),
-      totalPages
-    });
+    const links = getPaginationLinks(req, { limit: Number(limit), page: Number(page), totalPages });
 
     res.status(200).json({
       categories,

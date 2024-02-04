@@ -174,7 +174,7 @@ export const getTotalFolderRatings = async (id: string): Promise<number> =>
 export const getTotalFolderSoftware = async (id: string): Promise<number> =>
   dbClient.software.count({ where: { folders: { some: { id } } } });
 
-export const getAverageFolderRating = async (id: string): Promise<number> => {
+export const getAverageFolderRating = async (id: string): Promise<number | null> => {
   const aggregatedRating = await dbClient.rating.aggregate({
     _avg: {
       rating: true
@@ -184,5 +184,5 @@ export const getAverageFolderRating = async (id: string): Promise<number> => {
     }
   });
 
-  return Number(aggregatedRating._avg.rating);
+  return aggregatedRating._avg.rating;
 };

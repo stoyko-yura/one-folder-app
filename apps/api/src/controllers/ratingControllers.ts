@@ -1,41 +1,31 @@
 import type { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 
-import { dbClient } from '@/config';
-import { errorHandler } from '@/middleware';
-import { capitalize, findEntityById } from '@/utils';
+import { errorHandler, getPaginationLinks } from '@/middleware';
+import { commonServices, ratingServices, userServices } from '@/services';
+import { capitalize } from '@/utils';
 
 // Get ratings
 export const getRatings = async (req: Request, res: Response) => {
   try {
     const { page, limit, pageIndex } = req.query;
 
-    const ratings = await dbClient.rating.findMany({
-      skip: Number(pageIndex) * (Number(limit) || 10),
-      take: Number(limit) || 10
+    const ratings = await ratingServices.findRatingsWithPagination({
+      limit: Number(limit),
+      orderBy: {
+        createdAt: 'asc'
+      },
+      pageIndex: Number(pageIndex)
     });
 
-    if (!ratings.length) {
+    if (!ratings) {
       return errorHandler(new Error('Ratings not found'), res, 404);
     }
 
-    const totalRatings = await dbClient.rating.count();
+    const totalRatings = await ratingServices.getTotalRatings();
     const totalPages = Math.ceil(totalRatings / Number(limit));
 
-    const links = {
-      next:
-        Number(page) < totalPages
-          ? `${req.protocol}://${req.headers.host}/api/ratings?page=${
-              Number(page) + 1
-            }&limit=${Number(limit)}`
-          : null,
-      previus:
-        Number(page) > 1
-          ? `${req.protocol}://${req.headers.host}/api/ratings?page=${
-              Number(page) - 1
-            }&limit=${Number(limit)}`
-          : null
-    };
+    const links = getPaginationLinks(req, { limit: Number(limit), page: Number(page), totalPages });
 
     res.status(200).json({
       links,
@@ -55,11 +45,7 @@ export const getRating = async (req: Request, res: Response) => {
   try {
     const { ratingId } = req.params;
 
-    const rating = await dbClient.rating.findUnique({
-      where: {
-        id: ratingId
-      }
-    });
+    const rating = await ratingServices.findRatingById(ratingId);
 
     if (!rating) {
       return errorHandler(new Error(`Rating ${ratingId} not found`), res, 404);
@@ -93,11 +79,7 @@ export const postRating = async (req: Request, res: Response) => {
       return errorHandler(new Error('Entity id is required'), res, 500);
     }
 
-    const user = await dbClient.user.findUnique({
-      where: {
-        id: userId
-      }
-    });
+    const user = await userServices.findUserById(userId);
 
     if (!user) {
       return errorHandler(new Error(`User ${userId} not found`), res, 404);
@@ -113,51 +95,36 @@ export const postRating = async (req: Request, res: Response) => {
 
     const entityName = entityNames[entityId];
 
-    await findEntityById(entityName, entityId, res);
+    const entity = await commonServices.findEntityById(entityId, entityName);
 
-    const existRating = await dbClient.rating.findFirst({
-      where: {
-        authorId: userId,
-        commentId,
-        folderId,
-        softwareId
-      }
-    });
+    if (!entity) {
+      return errorHandler(new Error(`${entityName} ${entityId} not found`), res, 404);
+    }
+
+    const existRating = await ratingServices.findRatingByEntityId(userId, entityId);
 
     if (existRating) {
       return errorHandler(new Error(`User already rated ${entityName}`), res);
     }
 
-    const createdRating = await dbClient.rating.create({
-      data: {
-        authorId: userId,
-        commentId,
-        folderId,
-        rating: Number(rating),
-        softwareId
-      }
+    const createdRating = await ratingServices.createRating({
+      authorId: userId,
+      commentId,
+      folderId,
+      rating: Number(rating),
+      softwareId
     });
 
-    const aggregatedRating = await dbClient.rating.aggregate({
-      _avg: {
-        rating: true
-      },
-      where: {
-        OR: [
-          { commentId: commentId || '' },
-          { folderId: folderId || '' },
-          { softwareId: softwareId || '' }
-        ]
-      }
-    });
+    const averageRating = await ratingServices.getAverageRating(entityId);
 
-    const editedEntity = await dbClient[entityName].update({
-      data: {
-        averageRating: Number(aggregatedRating._avg.rating)
-      },
-      where: {
-        id: entityId
-      }
+    if (!averageRating) {
+      return errorHandler(new Error('Something went wrong'), res);
+    }
+
+    const editedEntity = await ratingServices.updateRatingInEntity({
+      averageRating,
+      entityId,
+      entityName
     });
 
     res.status(200).json({
@@ -186,32 +153,19 @@ export const putRating = async (req: Request, res: Response) => {
     const { ratingId } = req.params;
     const { userId, rating } = req.body;
 
-    const user = await dbClient.user.findUnique({
-      where: { id: userId }
-    });
+    const user = await userServices.findUserById(userId);
 
     if (!user) {
       return errorHandler(new Error(`User ${userId} not found`), res, 404);
     }
 
-    const existRating = await dbClient.rating.findUnique({
-      where: {
-        id: ratingId
-      }
-    });
+    const existRating = await ratingServices.findRatingById(ratingId);
 
     if (!existRating) {
       return errorHandler(new Error(`Rating ${ratingId} not found`), res, 404);
     }
 
-    const editedRating = await dbClient.rating.update({
-      data: {
-        rating: Number(rating)
-      },
-      where: {
-        id: ratingId
-      }
-    });
+    const editedRating = await ratingServices.updateRating(ratingId, { rating });
 
     const entityId = existRating.commentId || existRating.folderId || existRating.softwareId;
 
@@ -227,30 +181,22 @@ export const putRating = async (req: Request, res: Response) => {
 
     const entityName = entityNames[entityId];
 
-    await findEntityById(entityName, entityId, res);
+    const entity = await commonServices.findEntityById(entityId, entityName);
 
-    const aggregatedRating = await dbClient.rating.aggregate({
-      _avg: {
-        rating: true
-      },
-      where: {
-        OR: [
-          { commentId: entityId || '' },
-          { folderId: entityId || '' },
-          { softwareId: entityId || '' }
-        ]
-      }
-    });
+    if (!entity) {
+      return errorHandler(new Error(`${entityName} ${entityId} not found`), res, 404);
+    }
 
-    const averageRating = Number(aggregatedRating._avg.rating);
+    const averageRating = await ratingServices.getAverageRating(entityId);
 
-    const editedEntity = await dbClient[entityName].update({
-      data: {
-        averageRating
-      },
-      where: {
-        id: entityId
-      }
+    if (!averageRating) {
+      return errorHandler(new Error('Something went wrong'), res);
+    }
+
+    const editedEntity = await ratingServices.updateRatingInEntity({
+      averageRating,
+      entityId,
+      entityName
     });
 
     res.status(200).json({
@@ -269,21 +215,13 @@ export const deleteRating = async (req: Request, res: Response) => {
   try {
     const { ratingId } = req.params;
 
-    const rating = await dbClient.rating.findUnique({
-      where: {
-        id: ratingId
-      }
-    });
+    const rating = await ratingServices.findRatingById(ratingId);
 
     if (!rating) {
       return errorHandler(new Error(`Rating ${ratingId} not found`), res, 404);
     }
 
-    await dbClient.rating.delete({
-      where: {
-        id: ratingId
-      }
-    });
+    await ratingServices.deleteRating(ratingId);
 
     res.status(200).json({
       message: 'Rating deleted',
