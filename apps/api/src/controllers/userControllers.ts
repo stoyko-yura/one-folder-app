@@ -1,8 +1,8 @@
 import type { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 
-import { dbClient } from '@/config';
-import { errorHandler } from '@/middleware';
+import { errorHandler, getPaginationLinks } from '@/middleware';
+import { userServices } from '@/services';
 import { excludeFields } from '@/utils';
 
 // Get users
@@ -10,44 +10,22 @@ export const getUsers = async (req: Request, res: Response) => {
   try {
     const { page, limit, pageIndex } = req.query;
 
-    const users = await dbClient.user.findMany({
-      include: {
-        _count: {
-          select: {
-            comments: true,
-            folders: true
-          }
-        },
-        profile: true
-      },
+    const users = await userServices.findUsersWithPagination({
+      limit: Number(limit),
       orderBy: {
         createdAt: 'asc'
       },
-      skip: Number(pageIndex) * (Number(limit) || 10),
-      take: Number(limit) || 10
+      pageIndex: Number(pageIndex)
     });
 
-    if (!users.length) {
+    if (!users) {
       return errorHandler(new Error('Users not found'), res, 404);
     }
 
-    const totalUsers = await dbClient.user.count();
+    const totalUsers = await userServices.getTotalUsers();
     const totalPages = Math.ceil(totalUsers / Number(limit));
 
-    const links = {
-      next:
-        Number(page) < totalPages
-          ? `${req.protocol}://${req.headers.host}/api/users?page=${
-              Number(page) + 1
-            }&limit=${Number(limit)}`
-          : null,
-      previus:
-        Number(page) > 1
-          ? `${req.protocol}://${req.headers.host}/api/users?page=${
-              Number(page) - 1
-            }&limit=${Number(limit)}`
-          : null
-    };
+    const links = getPaginationLinks(req, { limit: Number(limit), page: Number(page), totalPages });
 
     res.status(200).json({
       links,
@@ -67,20 +45,7 @@ export const getUser = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
 
-    const user = await dbClient.user.findUnique({
-      include: {
-        _count: {
-          select: {
-            comments: true,
-            folders: true
-          }
-        },
-        profile: true
-      },
-      where: {
-        id: userId
-      }
-    });
+    const user = await userServices.findUserById(userId, { withInclude: true });
 
     if (!user) {
       return errorHandler(new Error(`User ${userId} not found`), res, 404);
@@ -102,54 +67,28 @@ export const getUserComments = async (req: Request, res: Response) => {
     const { page, limit, pageIndex } = req.query;
     const { userId } = req.params;
 
-    const user = await dbClient.user.findUnique({
-      where: {
-        id: userId
-      }
-    });
+    const user = await userServices.findUserById(userId);
 
     if (!user) {
       return errorHandler(new Error(`User ${userId}`), res, 404);
     }
 
-    const userComments = await dbClient.comment.findMany({
+    const userComments = await userServices.findUserCommentsWithPagination(userId, {
+      limit: Number(limit),
       orderBy: {
         createdAt: 'asc'
       },
-      skip: Number(pageIndex) * (Number(limit) || 10),
-      take: Number(limit) || 10,
-      where: {
-        authorId: userId
-      }
+      pageIndex: Number(pageIndex)
     });
 
-    if (!userComments.length) {
+    if (!userComments) {
       return errorHandler(new Error(`User's comments not found`), res, 404);
     }
 
-    const totalUserComments = (
-      await dbClient.comment.findMany({
-        where: {
-          authorId: userId
-        }
-      })
-    ).length;
+    const totalUserComments = await userServices.getTotalUserComments(userId);
     const totalPages = Math.ceil(totalUserComments / Number(limit));
 
-    const links = {
-      next:
-        Number(page) < totalPages
-          ? `${req.protocol}://${req.headers.host}/api/users/${userId}/comments?page=${
-              Number(page) + 1
-            }&limit=${Number(limit)}`
-          : null,
-      previus:
-        Number(page) > 1
-          ? `${req.protocol}://${req.headers.host}/api/users/${userId}/comments?page=${
-              Number(page) - 1
-            }&limit=${Number(limit)}`
-          : null
-    };
+    const links = getPaginationLinks(req, { limit: Number(limit), page: Number(page), totalPages });
 
     res.status(200).json({
       links,
@@ -170,59 +109,35 @@ export const getUserFolders = async (req: Request, res: Response) => {
     const { page, limit, pageIndex } = req.query;
     const { userId } = req.params;
 
-    const user = await dbClient.user.findUnique({
-      where: {
-        id: userId
-      }
-    });
+    const user = await userServices.findUserById(userId);
 
     if (!user) {
       return errorHandler(new Error(`User ${userId}`), res, 404);
     }
 
-    const userFolders = await dbClient.folder.findMany({
+    const userFolders = await userServices.findUserFoldersWithPagination(userId, {
+      limit: Number(limit),
       orderBy: {
         createdAt: 'asc'
       },
-      skip: Number(pageIndex) * (Number(limit) || 10),
-      take: Number(limit) || 10,
-      where: {
-        authorId: userId
-      }
+      pageIndex: Number(pageIndex)
     });
 
-    if (!userFolders.length) {
+    if (!userFolders) {
       return errorHandler(new Error(`User's folders not found`), res, 404);
     }
 
-    const totalUserFolders = await dbClient.folder.findMany({
-      where: {
-        authorId: userId
-      }
-    });
-    const totalPages = Math.ceil(totalUserFolders.length / Number(limit));
+    const totalUserFolders = await userServices.getTotalUserFolders(userId);
+    const totalPages = Math.ceil(totalUserFolders / Number(limit));
 
-    const links = {
-      next:
-        Number(page) < totalPages
-          ? `${req.protocol}://${req.headers.host}/api/users/${userId}/folders?page=${
-              Number(page) + 1
-            }&limit=${Number(limit)}`
-          : null,
-      previus:
-        Number(page) > 1
-          ? `${req.protocol}://${req.headers.host}/api/users/${userId}/folders?page=${
-              Number(page) - 1
-            }&limit=${Number(limit)}`
-          : null
-    };
+    const links = getPaginationLinks(req, { limit: Number(limit), page: Number(page), totalPages });
 
     res.status(200).json({
       links,
       message: "User's folders loaded",
       success: true,
       totalPages,
-      totalUserFolders: totalUserFolders.length,
+      totalUserFolders,
       userFolders
     });
   } catch (error) {
@@ -245,27 +160,22 @@ export const putUser = async (req: Request, res: Response) => {
     const { userId } = req.params;
     const { email, login, bio, username, role } = req.body;
 
-    const user = await dbClient.user.findUnique({
-      where: { id: userId }
-    });
+    const user = await userServices.findUserById(userId);
 
     if (!user) {
       return errorHandler(new Error(`User ${userId} not found`), res, 404);
     }
 
-    const editedUser = await dbClient.user.update({
-      data: {
-        email,
-        login,
-        profile: {
-          update: {
-            bio: bio || null,
-            username: username || null
-          }
-        },
-        role
+    const editedUser = await userServices.updateUser(userId, {
+      email,
+      login,
+      profile: {
+        update: {
+          bio: bio || null,
+          username: username || null
+        }
       },
-      where: { id: userId }
+      role
     });
 
     res.status(200).json({
@@ -283,17 +193,13 @@ export const deleteUser = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
 
-    const user = await dbClient.user.findUnique({ where: { id: userId } });
+    const user = await userServices.findUserById(userId);
 
     if (!user) {
       return errorHandler(new Error(`User ${userId} not found`), res, 404);
     }
 
-    await dbClient.user.delete({
-      where: {
-        id: userId
-      }
-    });
+    await userServices.deleteUser(userId);
 
     res.status(200).json({
       message: 'User deleted',
