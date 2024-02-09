@@ -138,8 +138,8 @@ export const findFolderSoftwareWithPagination = async (
   return folderSoftware;
 };
 
-export const createFolder = async (data: Prisma.FolderCreateInput): Promise<Folder> => {
-  const folder = await dbClient.folder.create({ data });
+export const createFolder = async (data: Prisma.FolderCreateArgs): Promise<Folder> => {
+  const folder = await dbClient.folder.create(data);
 
   return folder;
 };

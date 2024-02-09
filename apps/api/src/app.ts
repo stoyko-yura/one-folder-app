@@ -20,5 +20,6 @@ app.use('/api/ratings', routes.ratingRoutes);
 app.use('/api/roles', routes.roleRoutes);
 app.use('/api/categories', routes.categoryRoutes);
 app.use('/api/software', routes.softwareRoutes);
+app.use('/api/comments', routes.commentRoutes);
 
 export default app;

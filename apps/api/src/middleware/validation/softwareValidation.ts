@@ -14,7 +14,7 @@ export const postSoftwareValidation: ValidationChain[] = [
   body('description')
     .optional()
     .isLength({ max: 100 })
-    .withMessage('Description must be less than or equal to 200'),
+    .withMessage('Description must be less than or equal to 100'),
   body('categories')
     .not()
     .isEmpty()
@@ -36,5 +36,5 @@ export const putSoftwareValidation: ValidationChain[] = [
   body('description')
     .optional()
     .isLength({ max: 100 })
-    .withMessage('Description must be less than or equal to 200')
+    .withMessage('Description must be less than or equal to 100')
 ];

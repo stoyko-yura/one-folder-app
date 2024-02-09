@@ -1,5 +1,6 @@
 export * from './authRoutes';
 export * from './categoryRoutes';
+export * from './commentRoutes';
 export * from './folderAccessRoutes';
 export * from './folderRoutes';
 export * from './ratingRoutes';

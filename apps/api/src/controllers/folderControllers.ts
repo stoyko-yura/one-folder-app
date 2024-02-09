@@ -211,15 +211,7 @@ export const postFolder = async (req: Request, res: Response) => {
     }
 
     const createdFolder = await folderServices.createFolder({
-      access,
-      author: {
-        connect: {
-          id: authorId
-        }
-      },
-      description,
-      image,
-      title
+      data: { access, authorId, description, image, title }
     });
 
     res.status(200).json({
