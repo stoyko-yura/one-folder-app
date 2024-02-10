@@ -201,7 +201,7 @@ export const postSoftware = async (req: Request, res: Response) => {
       });
     }
 
-    const { description, icon, name, categories, url } = req.body;
+    const { description, icon, name, categoryIds, url } = req.body;
 
     const software = await softwareServices.findSoftwareByName(name);
 
@@ -211,10 +211,7 @@ export const postSoftware = async (req: Request, res: Response) => {
 
     const createdSoftware = await softwareServices.createSoftware({
       categories: {
-        connectOrCreate: categories.map((category: string) => ({
-          create: { name: category },
-          where: { name: category }
-        }))
+        connect: categoryIds.map((categoryId: string) => ({ id: categoryId }))
       },
       description,
       icon,
@@ -254,8 +251,8 @@ export const putSoftware = async (req: Request, res: Response) => {
     }
 
     const editedSoftware = await softwareServices.updateSoftware(softwareId, {
-      description: description || null,
-      icon: icon || null,
+      description,
+      icon,
       name,
       url
     });
@@ -263,6 +260,33 @@ export const putSoftware = async (req: Request, res: Response) => {
     res.status(200).json({
       message: 'Software edited',
       software: editedSoftware,
+      success: true
+    });
+  } catch (error) {
+    errorHandler(error as Error, res);
+  }
+};
+
+// Put software's categories
+export const putSoftwareCategories = async (req: Request, res: Response) => {
+  try {
+    const { softwareId } = req.params;
+    const { categoryIds } = req.body;
+
+    const software = await softwareServices.findSoftwareById(softwareId);
+
+    if (!software) {
+      return errorHandler(new Error(`Software ${softwareId} not found`), res, 404);
+    }
+
+    const addedCategoriesToSoftware = await softwareServices.updateSoftwareCategories(
+      softwareId,
+      categoryIds
+    );
+
+    res.status(200).json({
+      message: 'Software edited',
+      software: addedCategoriesToSoftware,
       success: true
     });
   } catch (error) {

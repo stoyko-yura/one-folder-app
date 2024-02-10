@@ -176,6 +176,26 @@ export const updateSoftware = async (
   return software;
 };
 
+export const updateSoftwareCategories = async (
+  softwareId: string,
+  categoryIds: string[]
+): Promise<Software> => {
+  const updatedSoftware = await dbClient.software.update({
+    data: {
+      categories: {
+        connect: categoryIds.map((categoryId) => ({
+          id: categoryId
+        }))
+      }
+    },
+    where: {
+      id: softwareId
+    }
+  });
+
+  return updatedSoftware;
+};
+
 export const deleteSoftware = async (id: string): Promise<void> => {
   await dbClient.software.delete({
     where: {

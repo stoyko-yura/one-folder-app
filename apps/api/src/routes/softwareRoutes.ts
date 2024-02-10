@@ -26,6 +26,9 @@ router.post('/', postSoftwareValidation, softwareControllers.postSoftware);
 // Put software
 router.put('/:softwareId', putSoftwareValidation, softwareControllers.putSoftware);
 
+// Put software's categories
+router.put('/:softwareId/categories', softwareControllers.putSoftwareCategories);
+
 // Delete software
 router.delete('/:softwareId', softwareControllers.deleteSoftware);
 
