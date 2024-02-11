@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 
 import { config } from '@/config';
+import type { HttpResponseError } from '@/middleware';
 import { errorHandler } from '@/middleware';
 
 type Decoded = {
@@ -27,6 +28,6 @@ export const checkAuth = (req: Request, res: Response, next: NextFunction) => {
 
     next();
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };

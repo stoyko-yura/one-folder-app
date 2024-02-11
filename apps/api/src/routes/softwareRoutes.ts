@@ -1,7 +1,12 @@
 import { Router } from 'express';
 
 import { softwareControllers } from '@/controllers';
-import { pagination, postSoftwareValidation, putSoftwareValidation } from '@/middleware';
+import {
+  checkValidation,
+  pagination,
+  postSoftwareValidation,
+  putSoftwareValidation
+} from '@/middleware';
 
 const router: Router = Router();
 
@@ -21,10 +26,10 @@ router.get('/:softwareId/ratings', pagination, softwareControllers.getSoftwareRa
 router.get('/:softwareId/categories', pagination, softwareControllers.getSoftwareCategories);
 
 // Post software
-router.post('/', postSoftwareValidation, softwareControllers.postSoftware);
+router.post('/', postSoftwareValidation, checkValidation, softwareControllers.postSoftware);
 
 // Put software
-router.put('/:softwareId', putSoftwareValidation, softwareControllers.putSoftware);
+router.put('/:softwareId', putSoftwareValidation, checkValidation, softwareControllers.putSoftware);
 
 // Put software's categories
 router.put('/:softwareId/categories', softwareControllers.putSoftwareCategories);

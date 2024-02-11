@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 
-import { errorHandler } from './errorHandler';
+import { HttpResponseError, errorHandler } from './errorHandler';
 
 export const pagination = (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -12,7 +12,10 @@ export const pagination = (req: Request, res: Response, next: NextFunction) => {
     const pageIndex = parsedPage - 1;
 
     if (parsedPage < 0) {
-      return errorHandler(new Error('Page must be at least 1'), res);
+      throw new HttpResponseError({
+        message: 'Invalid page',
+        status: 'INTERNAL_SERVER_ERROR'
+      });
     }
 
     req.query = {
@@ -23,7 +26,7 @@ export const pagination = (req: Request, res: Response, next: NextFunction) => {
 
     next();
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 

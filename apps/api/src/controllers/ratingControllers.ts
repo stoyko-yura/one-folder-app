@@ -1,7 +1,6 @@
 import type { Request, Response } from 'express';
-import { validationResult } from 'express-validator';
 
-import { errorHandler, getPaginationLinks } from '@/middleware';
+import { HttpResponseError, errorHandler, getPaginationLinks } from '@/middleware';
 import { commonServices, ratingServices, userServices } from '@/services';
 import { capitalize } from '@/utils';
 
@@ -19,7 +18,10 @@ export const getRatings = async (req: Request, res: Response) => {
     });
 
     if (!ratings) {
-      return errorHandler(new Error('Ratings not found'), res, 404);
+      throw new HttpResponseError({
+        message: 'Ratings not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     const totalRatings = await ratingServices.getTotalRatings();
@@ -36,7 +38,7 @@ export const getRatings = async (req: Request, res: Response) => {
       totalRatings
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
@@ -48,7 +50,11 @@ export const getRating = async (req: Request, res: Response) => {
     const rating = await ratingServices.findRatingById(ratingId);
 
     if (!rating) {
-      return errorHandler(new Error(`Rating ${ratingId} not found`), res, 404);
+      throw new HttpResponseError({
+        description: `Rating ${ratingId} not found`,
+        message: 'Rating not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     res.status(200).json({
@@ -57,32 +63,30 @@ export const getRating = async (req: Request, res: Response) => {
       success: true
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
 // Post rating
 export const postRating = async (req: Request, res: Response) => {
   try {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      return res.status(500).json({
-        errors: errors.array(),
-        success: false
-      });
-    }
-
     const { commentId, softwareId, folderId, userId, rating } = req.body;
 
     if (!commentId && !folderId && !softwareId) {
-      return errorHandler(new Error('Entity id is required'), res, 500);
+      throw new HttpResponseError({
+        message: 'Please provide a comment, folder or software id',
+        status: 'BAD_REQUEST'
+      });
     }
 
     const user = await userServices.findUserById(userId);
 
     if (!user) {
-      return errorHandler(new Error(`User ${userId} not found`), res, 404);
+      throw new HttpResponseError({
+        description: `User ${userId} not found`,
+        message: 'User not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     const entityId = commentId || folderId || softwareId;
@@ -98,13 +102,21 @@ export const postRating = async (req: Request, res: Response) => {
     const entity = await commonServices.findEntityById(entityId, entityName);
 
     if (!entity) {
-      return errorHandler(new Error(`${entityName} ${entityId} not found`), res, 404);
+      throw new HttpResponseError({
+        description: `${entityName} ${entityId} not found`,
+        message: `${entityName} not found`,
+        status: 'NOT_FOUND'
+      });
     }
 
     const existRating = await ratingServices.findRatingByEntityId(userId, entityId);
 
     if (existRating) {
-      return errorHandler(new Error(`User already rated ${entityName}`), res);
+      throw new HttpResponseError({
+        description: `${entityName} ${entityId} already rated`,
+        message: `${entityName} already rated`,
+        status: 'BAD_REQUEST'
+      });
     }
 
     const createdRating = await ratingServices.createRating({
@@ -118,7 +130,10 @@ export const postRating = async (req: Request, res: Response) => {
     const averageRating = await ratingServices.getAverageRating(entityId);
 
     if (!averageRating) {
-      return errorHandler(new Error('Something went wrong'), res);
+      throw new HttpResponseError({
+        message: 'Something went wrong',
+        status: 'INTERNAL_SERVER_ERROR'
+      });
     }
 
     const editedEntity = await ratingServices.updateRatingInEntity({
@@ -134,35 +149,34 @@ export const postRating = async (req: Request, res: Response) => {
       success: true
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
 // Put rating
 export const putRating = async (req: Request, res: Response) => {
   try {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      return res.status(500).json({
-        errors: errors.array(),
-        success: false
-      });
-    }
-
     const { ratingId } = req.params;
     const { userId, rating } = req.body;
 
     const user = await userServices.findUserById(userId);
 
     if (!user) {
-      return errorHandler(new Error(`User ${userId} not found`), res, 404);
+      throw new HttpResponseError({
+        description: `User ${userId} not found`,
+        message: 'User not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     const existRating = await ratingServices.findRatingById(ratingId);
 
     if (!existRating) {
-      return errorHandler(new Error(`Rating ${ratingId} not found`), res, 404);
+      throw new HttpResponseError({
+        description: `Rating ${ratingId} not found`,
+        message: 'Rating not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     const editedRating = await ratingServices.updateRating(ratingId, { rating });
@@ -170,7 +184,10 @@ export const putRating = async (req: Request, res: Response) => {
     const entityId = existRating.commentId || existRating.folderId || existRating.softwareId;
 
     if (!entityId) {
-      return errorHandler(new Error('Something went wrong'), res);
+      throw new HttpResponseError({
+        message: 'Something went wrong',
+        status: 'INTERNAL_SERVER_ERROR'
+      });
     }
 
     const entityNames = {
@@ -184,13 +201,20 @@ export const putRating = async (req: Request, res: Response) => {
     const entity = await commonServices.findEntityById(entityId, entityName);
 
     if (!entity) {
-      return errorHandler(new Error(`${entityName} ${entityId} not found`), res, 404);
+      throw new HttpResponseError({
+        description: `${entityName} ${entityId} not found`,
+        message: `${entityName} not found`,
+        status: 'NOT_FOUND'
+      });
     }
 
     const averageRating = await ratingServices.getAverageRating(entityId);
 
     if (!averageRating) {
-      return errorHandler(new Error('Something went wrong'), res);
+      throw new HttpResponseError({
+        message: 'Something went wrong',
+        status: 'INTERNAL_SERVER_ERROR'
+      });
     }
 
     const editedEntity = await ratingServices.updateRatingInEntity({
@@ -206,7 +230,7 @@ export const putRating = async (req: Request, res: Response) => {
       success: true
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
@@ -218,7 +242,11 @@ export const deleteRating = async (req: Request, res: Response) => {
     const rating = await ratingServices.findRatingById(ratingId);
 
     if (!rating) {
-      return errorHandler(new Error(`Rating ${ratingId} not found`), res, 404);
+      throw new HttpResponseError({
+        description: `Rating ${ratingId} not found`,
+        message: 'Rating not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     await ratingServices.deleteRating(ratingId);
@@ -228,6 +256,6 @@ export const deleteRating = async (req: Request, res: Response) => {
       success: true
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };

@@ -1,7 +1,12 @@
 import { Router } from 'express';
 
 import { commentControllers } from '@/controllers';
-import { pagination, postCommetValidation, putCommentValidation } from '@/middleware';
+import {
+  checkValidation,
+  pagination,
+  postCommetValidation,
+  putCommentValidation
+} from '@/middleware';
 
 const router: Router = Router();
 
@@ -15,10 +20,10 @@ router.get('/:commentId', commentControllers.getComment);
 router.get('/:commentId/ratings', pagination, commentControllers.getCommentRatings);
 
 // Post comment
-router.post('/', postCommetValidation, commentControllers.postComment);
+router.post('/', postCommetValidation, checkValidation, commentControllers.postComment);
 
 // Put comment
-router.put('/:commentId', putCommentValidation, commentControllers.putComment);
+router.put('/:commentId', putCommentValidation, checkValidation, commentControllers.putComment);
 
 // Delete comment
 router.delete('/:commentId', commentControllers.deleteComment);

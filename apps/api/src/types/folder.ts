@@ -7,3 +7,10 @@ export interface PostFolderData {
   image?: string;
   title: string;
 }
+
+export interface PutFolderData {
+  access?: FolderAccess;
+  description?: string;
+  image?: string;
+  title?: string;
+}

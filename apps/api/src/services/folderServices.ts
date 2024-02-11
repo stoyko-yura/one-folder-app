@@ -1,7 +1,7 @@
 import type { Comment, Folder, Prisma, Rating, Software } from '@one-folder-app/database';
 
 import { dbClient } from '@/config';
-import type { PaginationOptions } from '@/types';
+import type { PaginationOptions, PostFolderData, PutFolderData } from '@/types';
 
 export const findFolderById = async (id: string) => {
   const folder = await dbClient.folder.findUnique({
@@ -138,15 +138,32 @@ export const findFolderSoftwareWithPagination = async (
   return folderSoftware;
 };
 
-export const createFolder = async (data: Prisma.FolderCreateArgs): Promise<Folder> => {
-  const folder = await dbClient.folder.create(data);
+export const createFolder = async (data: PostFolderData): Promise<Folder> => {
+  const { authorId, title, access, description, image } = data;
+
+  const folder = await dbClient.folder.create({
+    data: {
+      access,
+      authorId,
+      description,
+      image,
+      title
+    }
+  });
 
   return folder;
 };
 
-export const updateFolder = async (id: string, data: Prisma.FolderUpdateInput): Promise<Folder> => {
+export const updateFolder = async (id: string, data: PutFolderData): Promise<Folder> => {
+  const { access, description, image, title } = data;
+
   const folder = await dbClient.folder.update({
-    data,
+    data: {
+      access,
+      description,
+      image,
+      title
+    },
     where: {
       id
     }

@@ -1,7 +1,6 @@
 import type { Request, Response } from 'express';
-import { validationResult } from 'express-validator';
 
-import { errorHandler, getPaginationLinks } from '@/middleware';
+import { HttpResponseError, errorHandler, getPaginationLinks } from '@/middleware';
 import { softwareServices } from '@/services';
 
 // Get softwares
@@ -18,7 +17,10 @@ export const getSoftwares = async (req: Request, res: Response) => {
     });
 
     if (!software) {
-      return errorHandler(new Error('Softwares not found'), res, 404);
+      throw new HttpResponseError({
+        message: 'Softwares not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     const totalSoftware = await softwareServices.getTotalSoftware();
@@ -35,7 +37,7 @@ export const getSoftwares = async (req: Request, res: Response) => {
       totalSoftware
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
@@ -47,7 +49,11 @@ export const getSoftware = async (req: Request, res: Response) => {
     const software = await softwareServices.findSoftwareById(softwareId);
 
     if (!software) {
-      return errorHandler(new Error(`Software ${softwareId} not found`), res, 404);
+      throw new HttpResponseError({
+        description: `Software ${softwareId} not found`,
+        message: 'Software not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     res.status(200).json({
@@ -56,7 +62,7 @@ export const getSoftware = async (req: Request, res: Response) => {
       success: true
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
@@ -69,7 +75,11 @@ export const getSoftwareFolders = async (req: Request, res: Response) => {
     const software = await softwareServices.findSoftwareById(softwareId);
 
     if (!software) {
-      return errorHandler(new Error(`Software ${softwareId} not found`), res, 404);
+      throw new HttpResponseError({
+        description: `Software ${softwareId} not found`,
+        message: 'Software not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     const softwareFolders = await softwareServices.findSoftwareFoldersWithPagination(softwareId, {
@@ -81,7 +91,10 @@ export const getSoftwareFolders = async (req: Request, res: Response) => {
     });
 
     if (!softwareFolders) {
-      return errorHandler(new Error("Software's folders not found"), res, 404);
+      throw new HttpResponseError({
+        message: "Software's folders not found",
+        status: 'NOT_FOUND'
+      });
     }
 
     const totalSoftwareFolders = await softwareServices.getTotalSoftwareFolders(softwareId);
@@ -98,7 +111,7 @@ export const getSoftwareFolders = async (req: Request, res: Response) => {
       totalSoftwareFolders
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
@@ -111,7 +124,11 @@ export const getSoftwareRatings = async (req: Request, res: Response) => {
     const software = await softwareServices.findSoftwareById(softwareId);
 
     if (!software) {
-      return errorHandler(new Error(`Software ${softwareId} not found`), res, 404);
+      throw new HttpResponseError({
+        description: `Software ${softwareId} not found`,
+        message: 'Software not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     const softwareRatings = await softwareServices.findSoftwareRatingsWithPagination(softwareId, {
@@ -123,7 +140,10 @@ export const getSoftwareRatings = async (req: Request, res: Response) => {
     });
 
     if (!softwareRatings) {
-      return errorHandler(new Error("Software's ratings not found"), res, 404);
+      throw new HttpResponseError({
+        message: "Software's ratings not found",
+        status: 'NOT_FOUND'
+      });
     }
 
     const totalSoftwareRatings = await softwareServices.getTotalSoftwareRatings(softwareId);
@@ -140,7 +160,7 @@ export const getSoftwareRatings = async (req: Request, res: Response) => {
       totalSoftwareRatings
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
@@ -153,7 +173,11 @@ export const getSoftwareCategories = async (req: Request, res: Response) => {
     const software = await softwareServices.findSoftwareById(softwareId);
 
     if (!software) {
-      return errorHandler(new Error(`Software ${softwareId} not found`), res, 404);
+      throw new HttpResponseError({
+        description: `Software ${softwareId} not found`,
+        message: 'Software not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     const softwareCategories = await softwareServices.findSoftwareCategoriesWithPagination(
@@ -168,7 +192,10 @@ export const getSoftwareCategories = async (req: Request, res: Response) => {
     );
 
     if (!softwareCategories) {
-      return errorHandler(new Error("Software's categories not found"), res, 404);
+      throw new HttpResponseError({
+        message: "Software's categories not found",
+        status: 'NOT_FOUND'
+      });
     }
 
     const totalSoftwareCategories = await softwareServices.getTotalSoftwareCategories(softwareId);
@@ -185,28 +212,23 @@ export const getSoftwareCategories = async (req: Request, res: Response) => {
       totalSoftwareCategories
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
 // Post software
 export const postSoftware = async (req: Request, res: Response) => {
   try {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      return res.status(500).json({
-        errors: errors.array(),
-        success: false
-      });
-    }
-
     const { description, icon, name, categoryIds, url } = req.body;
 
     const software = await softwareServices.findSoftwareByName(name);
 
     if (software) {
-      return errorHandler(new Error(`Software ${name} is already exist`), res);
+      throw new HttpResponseError({
+        description: `Software ${name} already exists`,
+        message: 'Software already exists',
+        status: 'BAD_REQUEST'
+      });
     }
 
     const createdSoftware = await softwareServices.createSoftware({
@@ -225,29 +247,24 @@ export const postSoftware = async (req: Request, res: Response) => {
       success: true
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
 // Put software
 export const putSoftware = async (req: Request, res: Response) => {
   try {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      return res.status(500).json({
-        errors: errors.array(),
-        success: false
-      });
-    }
-
     const { softwareId } = req.params;
     const { description, icon, name, url } = req.body;
 
     const software = await softwareServices.findSoftwareById(softwareId);
 
     if (!software) {
-      return errorHandler(new Error(`Software ${softwareId} not found`), res, 404);
+      throw new HttpResponseError({
+        description: `Software ${softwareId} not found`,
+        message: 'Software not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     const editedSoftware = await softwareServices.updateSoftware(softwareId, {
@@ -263,7 +280,7 @@ export const putSoftware = async (req: Request, res: Response) => {
       success: true
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
@@ -276,7 +293,11 @@ export const putSoftwareCategories = async (req: Request, res: Response) => {
     const software = await softwareServices.findSoftwareById(softwareId);
 
     if (!software) {
-      return errorHandler(new Error(`Software ${softwareId} not found`), res, 404);
+      throw new HttpResponseError({
+        description: `Software ${softwareId} not found`,
+        message: 'Software not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     const addedCategoriesToSoftware = await softwareServices.updateSoftwareCategories(
@@ -290,7 +311,7 @@ export const putSoftwareCategories = async (req: Request, res: Response) => {
       success: true
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
@@ -302,7 +323,11 @@ export const deleteSoftware = async (req: Request, res: Response) => {
     const software = await softwareServices.findSoftwareById(softwareId);
 
     if (!software) {
-      return errorHandler(new Error(`Software ${softwareId} not found`), res, 404);
+      throw new HttpResponseError({
+        description: `Software ${softwareId} not found`,
+        message: 'Software not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     await softwareServices.deleteSoftware(softwareId);
@@ -312,6 +337,6 @@ export const deleteSoftware = async (req: Request, res: Response) => {
       success: true
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };

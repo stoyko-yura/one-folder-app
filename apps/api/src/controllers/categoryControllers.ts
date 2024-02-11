@@ -1,7 +1,6 @@
 import type { Request, Response } from 'express';
-import { validationResult } from 'express-validator';
 
-import { errorHandler, getPaginationLinks } from '@/middleware';
+import { HttpResponseError, errorHandler, getPaginationLinks } from '@/middleware';
 import { categoryServices } from '@/services';
 
 // Get categories
@@ -18,7 +17,10 @@ export const getCategories = async (req: Request, res: Response) => {
     });
 
     if (!categories) {
-      return errorHandler(new Error('Categories not found'), res, 404);
+      throw new HttpResponseError({
+        message: 'Categories not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     const totalCategories = await categoryServices.getTotalCategories();
@@ -35,7 +37,7 @@ export const getCategories = async (req: Request, res: Response) => {
       totalPages
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
@@ -47,7 +49,11 @@ export const getCategory = async (req: Request, res: Response) => {
     const category = await categoryServices.findCateogryById(categoryId);
 
     if (!category) {
-      return errorHandler(new Error('Category not found'), res, 404);
+      throw new HttpResponseError({
+        description: `Category ${categoryId} not found`,
+        message: 'Category not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     res.status(200).json({
@@ -56,7 +62,7 @@ export const getCategory = async (req: Request, res: Response) => {
       success: true
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
@@ -69,7 +75,11 @@ export const getCategorySoftwares = async (req: Request, res: Response) => {
     const category = await categoryServices.findCateogryById(categoryId);
 
     if (!category) {
-      return errorHandler(new Error(`Category ${categoryId} not found`), res, 404);
+      throw new HttpResponseError({
+        description: `Category ${categoryId} not found`,
+        message: 'Category not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     const categorySoftwares = await categoryServices.findCategorySoftwareWithPagination(
@@ -84,49 +94,43 @@ export const getCategorySoftwares = async (req: Request, res: Response) => {
     );
 
     if (!categorySoftwares) {
-      return errorHandler(new Error("Category's softwares not found"), res, 404);
+      throw new HttpResponseError({
+        message: "Category's softwares not found",
+        status: 'NOT_FOUND'
+      });
     }
 
     const totalCategorySoftwares = await categoryServices.getTotalCategorySoftwares(categoryId);
     const totalPages = Math.ceil(totalCategorySoftwares / Number(limit));
 
-    const links = getPaginationLinks(req, {
-      limit: Number(limit),
-      page: Number(page),
-      totalPages
-    });
+    const links = getPaginationLinks(req, { limit: Number(limit), page: Number(page), totalPages });
 
     res.status(200).json({
       categorySoftwares,
       links,
-      message: 'Software category softwares loaded',
+      message: "Category's softwares loaded",
       success: true,
       totalCategorySoftwares,
       totalPages
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
 // Post category
 export const postCategory = async (req: Request, res: Response) => {
   try {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      return res.status(500).json({
-        errors: errors.array(),
-        success: false
-      });
-    }
-
     const { name } = req.body;
 
     const category = await categoryServices.findCategoryByName(name);
 
     if (category) {
-      return errorHandler(new Error('Category with this name already exist'), res);
+      throw new HttpResponseError({
+        description: `Category ${name} already exists`,
+        message: 'Category already exists',
+        status: 'BAD_REQUEST'
+      });
     }
 
     const createdCategory = await categoryServices.createCategory({
@@ -139,7 +143,7 @@ export const postCategory = async (req: Request, res: Response) => {
       success: true
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
@@ -152,13 +156,21 @@ export const putCategory = async (req: Request, res: Response) => {
     let category = await categoryServices.findCateogryById(categoryId);
 
     if (!category) {
-      return errorHandler(new Error(`Category ${categoryId} not found`), res, 404);
+      throw new HttpResponseError({
+        description: `Category ${categoryId} not found`,
+        message: 'Category not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     category = await categoryServices.findCategoryByName(name);
 
     if (category) {
-      return errorHandler(new Error('Category already exist'), res);
+      throw new HttpResponseError({
+        description: `Category ${name} already exists`,
+        message: 'Category already exists',
+        status: 'BAD_REQUEST'
+      });
     }
 
     const editedCategory = await categoryServices.updateCategory(categoryId, {
@@ -171,7 +183,7 @@ export const putCategory = async (req: Request, res: Response) => {
       success: true
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
@@ -183,7 +195,11 @@ export const deleteCategory = async (req: Request, res: Response) => {
     const category = await categoryServices.findCateogryById(categoryId);
 
     if (!category) {
-      return errorHandler(new Error(`Category ${categoryId} not found`), res, 404);
+      throw new HttpResponseError({
+        description: `Category ${categoryId} not found`,
+        message: 'Category not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     await categoryServices.deleteCategoryById(categoryId);
@@ -193,6 +209,6 @@ export const deleteCategory = async (req: Request, res: Response) => {
       success: true
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };

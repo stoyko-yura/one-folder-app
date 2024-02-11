@@ -9,7 +9,8 @@
       "@/*": ["*"],
       "@/root/*": ["*"],
       "@/config/*": ["config/*"],
-      "@/libs/*": ["libs/*"]
+      "@/libs/*": ["libs/*"],
+      "@/types/*": ["types/*"]
     }
   },
   "include": ["src", ".eslintrc.cjs"],

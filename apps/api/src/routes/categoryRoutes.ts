@@ -1,7 +1,12 @@
 import { Router } from 'express';
 
 import { categoryControllers } from '@/controllers';
-import { pagination, postCategoryValidation, putCategoryValidation } from '@/middleware';
+import {
+  checkValidation,
+  pagination,
+  postCategoryValidation,
+  putCategoryValidation
+} from '@/middleware';
 
 const router: Router = Router();
 
@@ -15,10 +20,10 @@ router.get('/:categoryId', categoryControllers.getCategory);
 router.get('/:categoryId/software', pagination, categoryControllers.getCategorySoftwares);
 
 // Post catergory
-router.post('/', postCategoryValidation, categoryControllers.postCategory);
+router.post('/', postCategoryValidation, checkValidation, categoryControllers.postCategory);
 
 // Put category
-router.put('/:categoryId', putCategoryValidation, categoryControllers.putCategory);
+router.put('/:categoryId', putCategoryValidation, checkValidation, categoryControllers.putCategory);
 
 // Delete category
 router.delete('/:categoryId', categoryControllers.deleteCategory);

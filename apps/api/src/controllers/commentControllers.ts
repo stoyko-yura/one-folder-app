@@ -1,7 +1,6 @@
 import type { Request, Response } from 'express';
-import { validationResult } from 'express-validator';
 
-import { errorHandler, getPaginationLinks } from '@/middleware';
+import { HttpResponseError, errorHandler, getPaginationLinks } from '@/middleware';
 import { commentServices, folderServices, userServices } from '@/services';
 
 // Get comments
@@ -15,7 +14,10 @@ export const getComments = async (req: Request, res: Response) => {
     });
 
     if (!comments) {
-      return errorHandler(new Error('Comments not found'), res, 404);
+      throw new HttpResponseError({
+        message: 'Comments not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     const totalComments = await commentServices.getTotalComments();
@@ -32,7 +34,7 @@ export const getComments = async (req: Request, res: Response) => {
       totalPages
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
@@ -44,7 +46,11 @@ export const getComment = async (req: Request, res: Response) => {
     const comment = await commentServices.findCommentById(commentId);
 
     if (!comment) {
-      return errorHandler(new Error(`Comment ${commentId} not found`), res, 404);
+      throw new HttpResponseError({
+        description: `Comment ${commentId} not found`,
+        message: 'Comment not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     res.status(200).json({
@@ -53,7 +59,7 @@ export const getComment = async (req: Request, res: Response) => {
       success: true
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
@@ -66,7 +72,11 @@ export const getCommentRatings = async (req: Request, res: Response) => {
     const comment = await commentServices.findCommentById(commentId);
 
     if (!comment) {
-      return errorHandler(new Error(`Comment ${commentId} not found`), res, 404);
+      throw new HttpResponseError({
+        description: `Comment ${commentId} not found`,
+        message: 'Comment not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     const commentRatings = await commentServices.getCommentRatingsWithPagination(commentId, {
@@ -78,7 +88,10 @@ export const getCommentRatings = async (req: Request, res: Response) => {
     });
 
     if (!commentRatings) {
-      return errorHandler(new Error('Comment ratings not found'), res, 404);
+      throw new HttpResponseError({
+        message: "Comment's ratings not found",
+        status: 'NOT_FOUND'
+      });
     }
 
     const totalCommentRatings = await commentServices.getTotalCommentRatings(commentId);
@@ -89,46 +102,49 @@ export const getCommentRatings = async (req: Request, res: Response) => {
     res.status(200).json({
       commentRatings,
       links,
-      message: 'Comment ratings loaded',
+      message: "Comment's ratings loaded",
       success: true,
       totalCommentRatings,
       totalPages
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
 // Post comment
 export const postComment = async (req: Request, res: Response) => {
   try {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      return res.status(500).json({
-        errors: errors.array(),
-        success: false
-      });
-    }
-
     const { authorId, folderId, message } = req.body;
 
     const user = await userServices.findUserById(authorId);
 
     if (!user) {
-      return errorHandler(new Error(`User ${authorId} not found`), res, 404);
+      throw new HttpResponseError({
+        description: `User ${authorId} not found`,
+        message: 'User not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     const folder = await folderServices.findFolderById(folderId);
 
     if (!folder) {
-      return errorHandler(new Error(`Folder ${folderId} not found`), res, 404);
+      throw new HttpResponseError({
+        description: `Folder ${folderId} not found`,
+        message: 'Folder not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     const existComment = await commentServices.findCommentByAuthorIdAndFolderId(authorId, folderId);
 
     if (existComment) {
-      return errorHandler(new Error(`User ${authorId} already commented folder ${folderId}`), res);
+      throw new HttpResponseError({
+        description: `User ${authorId} already commented on folder ${folderId}`,
+        message: 'User already commented on folder',
+        status: 'BAD_REQUEST'
+      });
     }
 
     const createdComment = await commentServices.createComment({
@@ -143,29 +159,24 @@ export const postComment = async (req: Request, res: Response) => {
       success: true
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
 // Put comment
 export const putComment = async (req: Request, res: Response) => {
   try {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      return res.status(500).json({
-        errors: errors.array(),
-        success: false
-      });
-    }
-
     const { commentId } = req.params;
     const { message } = req.body;
 
     const comment = await commentServices.findCommentById(commentId);
 
     if (!comment) {
-      return errorHandler(new Error(`Comment ${commentId} not found`), res, 404);
+      throw new HttpResponseError({
+        description: `Comment ${commentId} not found`,
+        message: 'Comment not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     const editedComment = await commentServices.updateComment(commentId, {
@@ -178,7 +189,7 @@ export const putComment = async (req: Request, res: Response) => {
       success: true
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
@@ -190,7 +201,11 @@ export const deleteComment = async (req: Request, res: Response) => {
     const comment = await commentServices.findCommentById(commentId);
 
     if (!comment) {
-      return errorHandler(new Error(`Comment ${commentId} not found`), res, 404);
+      throw new HttpResponseError({
+        description: `Comment ${commentId} not found`,
+        message: 'Comment not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     await commentServices.deleteComment(commentId);
@@ -200,6 +215,6 @@ export const deleteComment = async (req: Request, res: Response) => {
       success: true
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };

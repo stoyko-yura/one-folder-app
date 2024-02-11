@@ -1,7 +1,6 @@
 import type { Request, Response } from 'express';
-import { validationResult } from 'express-validator';
 
-import { errorHandler, getPaginationLinks } from '@/middleware';
+import { HttpResponseError, errorHandler, getPaginationLinks } from '@/middleware';
 import { userServices } from '@/services';
 import { excludeFields } from '@/utils';
 
@@ -19,7 +18,10 @@ export const getUsers = async (req: Request, res: Response) => {
     });
 
     if (!users) {
-      return errorHandler(new Error('Users not found'), res, 404);
+      throw new HttpResponseError({
+        message: 'Users not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     const totalUsers = await userServices.getTotalUsers();
@@ -36,7 +38,7 @@ export const getUsers = async (req: Request, res: Response) => {
       users: excludeFields(users, ['hash'])
     });
   } catch (error) {
-    return errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
@@ -48,7 +50,11 @@ export const getUser = async (req: Request, res: Response) => {
     const user = await userServices.findUserById(userId, { withInclude: true });
 
     if (!user) {
-      return errorHandler(new Error(`User ${userId} not found`), res, 404);
+      throw new HttpResponseError({
+        description: `User ${userId} not found`,
+        message: 'User not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     res.status(200).json({
@@ -57,7 +63,7 @@ export const getUser = async (req: Request, res: Response) => {
       user: excludeFields(user, ['hash'])
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
@@ -70,7 +76,11 @@ export const getUserComments = async (req: Request, res: Response) => {
     const user = await userServices.findUserById(userId);
 
     if (!user) {
-      return errorHandler(new Error(`User ${userId}`), res, 404);
+      throw new HttpResponseError({
+        description: `User ${userId} not found`,
+        message: 'User not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     const userComments = await userServices.findUserCommentsWithPagination(userId, {
@@ -82,7 +92,10 @@ export const getUserComments = async (req: Request, res: Response) => {
     });
 
     if (!userComments) {
-      return errorHandler(new Error(`User's comments not found`), res, 404);
+      throw new HttpResponseError({
+        message: "User's comments not found",
+        status: 'NOT_FOUND'
+      });
     }
 
     const totalUserComments = await userServices.getTotalUserComments(userId);
@@ -99,7 +112,7 @@ export const getUserComments = async (req: Request, res: Response) => {
       userComments
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
@@ -112,7 +125,11 @@ export const getUserFolders = async (req: Request, res: Response) => {
     const user = await userServices.findUserById(userId);
 
     if (!user) {
-      return errorHandler(new Error(`User ${userId}`), res, 404);
+      throw new HttpResponseError({
+        description: `User ${userId} not found`,
+        message: 'User not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     const userFolders = await userServices.findUserFoldersWithPagination(userId, {
@@ -124,7 +141,10 @@ export const getUserFolders = async (req: Request, res: Response) => {
     });
 
     if (!userFolders) {
-      return errorHandler(new Error(`User's folders not found`), res, 404);
+      throw new HttpResponseError({
+        message: "User's folders not found",
+        status: 'NOT_FOUND'
+      });
     }
 
     const totalUserFolders = await userServices.getTotalUserFolders(userId);
@@ -141,29 +161,24 @@ export const getUserFolders = async (req: Request, res: Response) => {
       userFolders
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
 // Put user
 export const putUser = async (req: Request, res: Response) => {
   try {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      return res.status(500).json({
-        errors: errors.array(),
-        success: false
-      });
-    }
-
     const { userId } = req.params;
     const { email, login, bio, username, role } = req.body;
 
     const user = await userServices.findUserById(userId);
 
     if (!user) {
-      return errorHandler(new Error(`User ${userId} not found`), res, 404);
+      throw new HttpResponseError({
+        description: `User ${userId} not found`,
+        message: 'User not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     const editedUser = await userServices.updateUser(userId, {
@@ -184,7 +199,7 @@ export const putUser = async (req: Request, res: Response) => {
       user: excludeFields(editedUser, ['hash'])
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
@@ -196,7 +211,11 @@ export const deleteUser = async (req: Request, res: Response) => {
     const user = await userServices.findUserById(userId);
 
     if (!user) {
-      return errorHandler(new Error(`User ${userId} not found`), res, 404);
+      throw new HttpResponseError({
+        description: `User ${userId} not found`,
+        message: 'User not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     await userServices.deleteUser(userId);
@@ -206,6 +225,6 @@ export const deleteUser = async (req: Request, res: Response) => {
       success: true
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };

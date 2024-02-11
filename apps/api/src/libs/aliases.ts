@@ -14,3 +14,4 @@ moduleAlias.addAlias('@/services', path.join(rootdir, 'services'));
 moduleAlias.addAlias('@/middleware', path.join(rootdir, 'middleware'));
 moduleAlias.addAlias('@/routes', path.join(rootdir, 'routes'));
 moduleAlias.addAlias('@/utils', path.join(rootdir, 'utils'));
+moduleAlias.addAlias('@/types', path.join(rootdir, 'types'));

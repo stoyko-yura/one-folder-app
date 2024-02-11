@@ -1,34 +1,32 @@
 import type { Request, Response } from 'express';
-import { validationResult } from 'express-validator';
 
-import { errorHandler } from '@/middleware';
+import { HttpResponseError, errorHandler } from '@/middleware';
 import { authServices, userServices } from '@/services';
 import { excludeFields } from '@/utils';
 
 // Sign in
 export const signIn = async (req: Request, res: Response) => {
   try {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      return res.status(500).json({
-        errors: errors.array(),
-        success: false
-      });
-    }
-
     const { login, password } = req.body;
 
     const user = await userServices.findUserByLogin(login);
 
     if (!user) {
-      return errorHandler(new Error('User not found'), res, 404);
+      throw new HttpResponseError({
+        description: `User with ${login} not found`,
+        message: `User not found`,
+        status: 'NOT_FOUND'
+      });
     }
 
     const isValidPassword = await authServices.comparePassword(password, user.hash);
 
     if (!isValidPassword) {
-      return errorHandler(new Error('Invalid username or password'), res, 400);
+      throw new HttpResponseError({
+        description: 'Invalid username or password',
+        message: 'Invalid username or password',
+        status: 'BAD_REQUEST'
+      });
     }
 
     const token = authServices.generateToken({ userId: user.id }, { expiresIn: '7d' });
@@ -40,22 +38,13 @@ export const signIn = async (req: Request, res: Response) => {
       user: excludeFields(user, ['hash'])
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
 // Sign up
 export const signUp = async (req: Request, res: Response) => {
   try {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      return res.status(500).json({
-        errors: errors.array(),
-        success: false
-      });
-    }
-
     const { email, login, bio, username, password } = req.body;
 
     const user = await userServices.findUserByEmailOrLogin({
@@ -64,7 +53,11 @@ export const signUp = async (req: Request, res: Response) => {
     });
 
     if (user) {
-      return errorHandler(Error('Login or email already exist'), res);
+      throw new HttpResponseError({
+        description: `User with ${login} or ${email} already exist`,
+        message: 'User already exist',
+        status: 'BAD_REQUEST'
+      });
     }
 
     const passwordHash = await authServices.hashPassword(password);
@@ -90,7 +83,7 @@ export const signUp = async (req: Request, res: Response) => {
       user: excludeFields(createdUser, ['hash'])
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
@@ -102,7 +95,11 @@ export const getMe = async (req: Request, res: Response) => {
     const user = await userServices.findUserById(userId);
 
     if (!user) {
-      return errorHandler(new Error('Something went wrong'), res);
+      throw new HttpResponseError({
+        description: `User ${userId} not found`,
+        message: `User not found`,
+        status: 'NOT_FOUND'
+      });
     }
 
     const token = authServices.generateToken({ userId: user.id }, { expiresIn: '7d' });
@@ -114,41 +111,41 @@ export const getMe = async (req: Request, res: Response) => {
       user: excludeFields(user, ['hash'])
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
 // Change password
 export const changePassword = async (req: Request, res: Response) => {
   try {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      return res.status(500).json({
-        errors: errors.array(),
-        success: false
-      });
-    }
-
     const { userId, password, newPassword } = req.body;
 
     const user = await userServices.findUserById(userId);
 
     if (!user) {
-      return errorHandler(new Error(`User ${userId} not found`), res, 404);
+      throw new HttpResponseError({
+        description: `User ${userId} not found`,
+        message: `User not found`,
+        status: 'NOT_FOUND'
+      });
     }
 
     const isValidPassword = await authServices.comparePassword(password, user.hash);
 
     if (!isValidPassword) {
-      return errorHandler(new Error('Invalid password'), res, 400);
+      throw new HttpResponseError({
+        description: 'Invalid password',
+        message: 'Invalid password',
+        status: 'BAD_REQUEST'
+      });
     }
 
     if (isValidPassword && password === newPassword) {
-      return errorHandler(
-        new Error('New password must not be similar to the previous password'),
-        res
-      );
+      throw new HttpResponseError({
+        description: 'New password cannot be the same as old password',
+        message: 'New password cannot be the same as old password',
+        status: 'BAD_REQUEST'
+      });
     }
 
     const passwordHash = await authServices.hashPassword(password);
@@ -166,6 +163,6 @@ export const changePassword = async (req: Request, res: Response) => {
       user: excludeFields(editedUser, ['hash'])
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };

@@ -1,7 +1,6 @@
 import type { Request, Response } from 'express';
-import { validationResult } from 'express-validator';
 
-import { errorHandler, getPaginationLinks } from '@/middleware';
+import { HttpResponseError, errorHandler, getPaginationLinks } from '@/middleware';
 import { folderServices, userServices } from '@/services';
 import { excludeFields } from '@/utils';
 
@@ -19,7 +18,10 @@ export const getFolders = async (req: Request, res: Response) => {
     });
 
     if (!folders) {
-      return errorHandler(new Error('Folders not found'), res, 404);
+      throw new HttpResponseError({
+        message: 'Folders not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     const totalFolders = await folderServices.getTotalFolders();
@@ -36,7 +38,7 @@ export const getFolders = async (req: Request, res: Response) => {
       totalPages
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
@@ -48,7 +50,11 @@ export const getFolder = async (req: Request, res: Response) => {
     const folder = await folderServices.findFolderById(folderId);
 
     if (!folder) {
-      return errorHandler(new Error(`Folder ${folderId} not found`), res, 404);
+      throw new HttpResponseError({
+        description: `Folder ${folderId} not found`,
+        message: 'Folder not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     res.status(200).json({
@@ -57,7 +63,7 @@ export const getFolder = async (req: Request, res: Response) => {
       success: true
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
@@ -70,7 +76,11 @@ export const getFolderComments = async (req: Request, res: Response) => {
     const folder = await folderServices.findFolderById(folderId);
 
     if (!folder) {
-      return errorHandler(new Error(`Folder ${folderId} not found`), res, 404);
+      throw new HttpResponseError({
+        description: `Folder ${folderId} not found`,
+        message: 'Folder not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     const folderComments = await folderServices.findFolderCommentsWithPaginations(folderId, {
@@ -82,7 +92,10 @@ export const getFolderComments = async (req: Request, res: Response) => {
     });
 
     if (!folderComments) {
-      return errorHandler(new Error("Folder's comments not found"), res, 404);
+      throw new HttpResponseError({
+        message: "Folder's comments not found",
+        status: 'NOT_FOUND'
+      });
     }
 
     const totalFolderComments = await folderServices.getTotalFolderComments(folderId);
@@ -99,7 +112,7 @@ export const getFolderComments = async (req: Request, res: Response) => {
       totalPages
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
@@ -112,7 +125,11 @@ export const getFolderRatings = async (req: Request, res: Response) => {
     const folder = await folderServices.findFolderById(folderId);
 
     if (!folder) {
-      return errorHandler(new Error(`Folder ${folderId} not found`), res, 404);
+      throw new HttpResponseError({
+        description: `Folder ${folderId} not found`,
+        message: 'Folder not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     const folderRatings = await folderServices.findFolderRatingsWithPagination(folderId, {
@@ -124,7 +141,10 @@ export const getFolderRatings = async (req: Request, res: Response) => {
     });
 
     if (!folderRatings) {
-      return errorHandler(new Error("Folder's ratings not found"), res, 404);
+      throw new HttpResponseError({
+        message: "Folder's ratings not found",
+        status: 'NOT_FOUND'
+      });
     }
 
     const totalFolderRatings = await folderServices.getTotalFolderRatings(folderId);
@@ -144,7 +164,7 @@ export const getFolderRatings = async (req: Request, res: Response) => {
       totalPages
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
@@ -157,7 +177,11 @@ export const getFolderSoftware = async (req: Request, res: Response) => {
     const folder = await folderServices.findFolderById(folderId);
 
     if (!folder) {
-      return errorHandler(new Error(`Folder ${folderId} not found`), res, 404);
+      throw new HttpResponseError({
+        description: `Folder ${folderId} not found`,
+        message: 'Folder not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     const folderSoftware = await folderServices.findFolderSoftwareWithPagination(folderId, {
@@ -169,7 +193,10 @@ export const getFolderSoftware = async (req: Request, res: Response) => {
     });
 
     if (!folderSoftware) {
-      return errorHandler(new Error("Folder's ratings not found"), res, 404);
+      throw new HttpResponseError({
+        message: "Folder's software not found",
+        status: 'NOT_FOUND'
+      });
     }
 
     const totalFolderSoftware = await folderServices.getTotalFolderSoftware(folderId);
@@ -186,32 +213,31 @@ export const getFolderSoftware = async (req: Request, res: Response) => {
       totalPages
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
 // Post folder
 export const postFolder = async (req: Request, res: Response) => {
   try {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      return res.status(500).json({
-        errors: errors.array(),
-        success: false
-      });
-    }
-
     const { image, title, description, access, authorId } = req.body;
 
     const user = await userServices.findUserById(authorId);
 
     if (!user) {
-      return errorHandler(new Error(`User ${authorId} not found`), res, 404);
+      throw new HttpResponseError({
+        description: `User ${authorId} not found`,
+        message: 'User not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     const createdFolder = await folderServices.createFolder({
-      data: { access, authorId, description, image, title }
+      access,
+      authorId,
+      description,
+      image,
+      title
     });
 
     res.status(200).json({
@@ -220,35 +246,30 @@ export const postFolder = async (req: Request, res: Response) => {
       success: true
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
 // Put folder
 export const putFolder = async (req: Request, res: Response) => {
   try {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      return res.status(500).json({
-        errors: errors.array(),
-        success: false
-      });
-    }
-
     const { folderId } = req.params;
     const { image, title, description, access } = req.body;
 
     const folder = await folderServices.findFolderById(folderId);
 
     if (!folder) {
-      return errorHandler(new Error(`Folder ${folderId} not found`), res, 404);
+      throw new HttpResponseError({
+        description: `Folder ${folderId} not found`,
+        message: 'Folder not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     const editedFolder = await folderServices.updateFolder(folderId, {
       access,
-      description: description || null,
-      image: image || null,
+      description,
+      image,
       title
     });
 
@@ -258,7 +279,7 @@ export const putFolder = async (req: Request, res: Response) => {
       success: false
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
 
@@ -270,7 +291,11 @@ export const deleteFolder = async (req: Request, res: Response) => {
     const folder = folderServices.findFolderById(folderId);
 
     if (!folder) {
-      return errorHandler(new Error(`Folder ${folderId} not found`), res, 404);
+      throw new HttpResponseError({
+        description: `Folder ${folderId} not found`,
+        message: 'Folder not found',
+        status: 'NOT_FOUND'
+      });
     }
 
     await folderServices.deleteFolder(folderId);
@@ -280,6 +305,6 @@ export const deleteFolder = async (req: Request, res: Response) => {
       success: true
     });
   } catch (error) {
-    errorHandler(error as Error, res);
+    errorHandler(error as HttpResponseError, res);
   }
 };
