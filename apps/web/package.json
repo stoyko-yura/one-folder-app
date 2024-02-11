@@ -1,5 +1,5 @@
 {
-  "name": "@one-folder-app/client",
+  "name": "@one-folder-app/web",
   "private": true,
   "type": "module",
   "scripts": {
