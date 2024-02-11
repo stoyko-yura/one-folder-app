@@ -1,0 +1,11 @@
+{
+  "extends": "@one-folder-app/tsconfig/react.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "baseUrl": "src"
+  },
+  "include": ["src", ".eslintrc.cjs"],
+  "exclude": ["dist", "node_modules"],
+  "references": [{ "path": "tsconfig.node.json" }]
+}

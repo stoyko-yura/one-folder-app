@@ -17,7 +17,9 @@
     "@/utils": "dist/utils",
     "@/controllers": "dist/controllers",
     "@/middleware": "dist/middleware",
-    "@/routes": "dist/routes"
+    "@/routes": "dist/routes",
+    "@/types": "dist/types",
+    "@/services": "dist/services"
   },
   "devDependencies": {
     "@one-folder-app/eslint-config-custom": "workspace:*",
