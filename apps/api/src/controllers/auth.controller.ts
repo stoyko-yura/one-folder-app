@@ -1,8 +1,7 @@
 import type { Request, Response } from 'express';
 
-import { HttpResponseError, errorHandler } from '@/middleware';
 import { authServices, userServices } from '@/services';
-import { excludeFields } from '@/utils';
+import { HttpResponseError, errorHandler, excludeFields } from '@/utils';
 
 // Sign in
 export const signIn = async (req: Request, res: Response) => {

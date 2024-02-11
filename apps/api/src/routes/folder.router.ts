@@ -1,12 +1,7 @@
 import { Router } from 'express';
 
 import { folderControllers } from '@/controllers';
-import {
-  checkValidation,
-  pagination,
-  postFolderValidation,
-  putFolderValidation
-} from '@/middleware';
+import { checkValidation, folderValidation, pagination } from '@/middleware';
 
 const router: Router = Router();
 
@@ -26,12 +21,22 @@ router.get('/:folderId/ratings', pagination, folderControllers.getFolderRatings)
 router.get('/:folderId/software', pagination, folderControllers.getFolderSoftware);
 
 // Post folder
-router.post('/', postFolderValidation, checkValidation, folderControllers.postFolder);
+router.post(
+  '/',
+  folderValidation.postFolderValidation,
+  checkValidation,
+  folderControllers.postFolder
+);
 
 // Put folder
-router.put('/:folderId', putFolderValidation, checkValidation, folderControllers.putFolder);
+router.put(
+  '/:folderId',
+  folderValidation.putFolderValidation,
+  checkValidation,
+  folderControllers.putFolder
+);
 
 // Delete folder
 router.delete('/:folderId', folderControllers.deleteFolder);
 
-export const folderRoutes = router;
+export const folderRouter = router;

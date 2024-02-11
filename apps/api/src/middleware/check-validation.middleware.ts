@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 
-import { HttpResponseError, errorHandler } from './errorHandler';
+import { HttpResponseError, errorHandler } from '@/utils';
 
 export const checkValidation = (req: Request, res: Response, next: NextFunction) => {
   try {

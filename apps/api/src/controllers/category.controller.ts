@@ -1,7 +1,8 @@
 import type { Request, Response } from 'express';
 
-import { HttpResponseError, errorHandler, getPaginationLinks } from '@/middleware';
+import { getPaginationLinks } from '@/middleware';
 import { categoryServices } from '@/services';
+import { HttpResponseError, errorHandler } from '@/utils';
 
 // Get categories
 export const getCategories = async (req: Request, res: Response) => {

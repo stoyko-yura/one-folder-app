@@ -1,8 +1,8 @@
 import type { Request, Response } from 'express';
 
-import { HttpResponseError, errorHandler, getPaginationLinks } from '@/middleware';
+import { getPaginationLinks } from '@/middleware';
 import { commonServices, ratingServices, userServices } from '@/services';
-import { capitalize } from '@/utils';
+import { HttpResponseError, capitalize, errorHandler } from '@/utils';
 
 // Get ratings
 export const getRatings = async (req: Request, res: Response) => {

@@ -1,7 +1,8 @@
 import type { Request, Response } from 'express';
 
-import { HttpResponseError, errorHandler, getPaginationLinks } from '@/middleware';
+import { getPaginationLinks } from '@/middleware';
 import { softwareServices } from '@/services';
+import { HttpResponseError, errorHandler } from '@/utils';
 
 // Get softwares
 export const getSoftwares = async (req: Request, res: Response) => {

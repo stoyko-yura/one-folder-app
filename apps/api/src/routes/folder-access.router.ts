@@ -7,4 +7,4 @@ const router: Router = Router();
 // Get folder's accesses
 router.get('/', folderAccessControllers.getFolderAccesses);
 
-export const folderAccessRoutes = router;
+export const folderAccessRouter = router;

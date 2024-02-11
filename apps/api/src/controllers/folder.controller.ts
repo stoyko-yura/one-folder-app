@@ -1,8 +1,8 @@
 import type { Request, Response } from 'express';
 
-import { HttpResponseError, errorHandler, getPaginationLinks } from '@/middleware';
+import { getPaginationLinks } from '@/middleware';
 import { folderServices, userServices } from '@/services';
-import { excludeFields } from '@/utils';
+import { HttpResponseError, errorHandler, excludeFields } from '@/utils';
 
 // Get folders
 export const getFolders = async (req: Request, res: Response) => {

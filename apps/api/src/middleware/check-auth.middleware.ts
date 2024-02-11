@@ -2,8 +2,7 @@ import type { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 
 import { config } from '@/config';
-import type { HttpResponseError } from '@/middleware';
-import { errorHandler } from '@/middleware';
+import { errorHandler, type HttpResponseError } from '@/utils';
 
 type Decoded = {
   [key: string]: unknown;

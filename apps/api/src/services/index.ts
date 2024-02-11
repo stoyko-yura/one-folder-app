@@ -1,8 +1,8 @@
-export * as authServices from './authServices';
-export * as categoryServices from './categoryServices';
-export * as commentServices from './commentServices';
-export * as commonServices from './commonServices';
-export * as folderServices from './folderServices';
-export * as ratingServices from './ratingServices';
-export * as softwareServices from './softwareServices';
-export * as userServices from './userServices';
+export * as authServices from './auth.service';
+export * as categoryServices from './category.service';
+export * as commentServices from './comment.service';
+export * as commonServices from './common.service';
+export * as folderServices from './folder.service';
+export * as ratingServices from './rating.service';
+export * as softwareServices from './software.service';
+export * as userServices from './user.service';

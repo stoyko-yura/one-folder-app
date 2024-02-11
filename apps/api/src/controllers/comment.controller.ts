@@ -1,7 +1,8 @@
 import type { Request, Response } from 'express';
 
-import { HttpResponseError, errorHandler, getPaginationLinks } from '@/middleware';
+import { getPaginationLinks } from '@/middleware';
 import { commentServices, folderServices, userServices } from '@/services';
+import { HttpResponseError, errorHandler } from '@/utils';
 
 // Get comments
 export const getComments = async (req: Request, res: Response) => {

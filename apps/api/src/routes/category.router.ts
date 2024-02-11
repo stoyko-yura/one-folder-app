@@ -1,12 +1,7 @@
 import { Router } from 'express';
 
 import { categoryControllers } from '@/controllers';
-import {
-  checkValidation,
-  pagination,
-  postCategoryValidation,
-  putCategoryValidation
-} from '@/middleware';
+import { categoryValidation, checkValidation, pagination } from '@/middleware';
 
 const router: Router = Router();
 
@@ -20,12 +15,22 @@ router.get('/:categoryId', categoryControllers.getCategory);
 router.get('/:categoryId/software', pagination, categoryControllers.getCategorySoftwares);
 
 // Post catergory
-router.post('/', postCategoryValidation, checkValidation, categoryControllers.postCategory);
+router.post(
+  '/',
+  categoryValidation.postCategoryValidation,
+  checkValidation,
+  categoryControllers.postCategory
+);
 
 // Put category
-router.put('/:categoryId', putCategoryValidation, checkValidation, categoryControllers.putCategory);
+router.put(
+  '/:categoryId',
+  categoryValidation.putCategoryValidation,
+  checkValidation,
+  categoryControllers.putCategory
+);
 
 // Delete category
 router.delete('/:categoryId', categoryControllers.deleteCategory);
 
-export const categoryRoutes = router;
+export const categoryRouter = router;

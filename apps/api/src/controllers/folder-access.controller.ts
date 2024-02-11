@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 
 import { dbEnums } from '@/config';
-import { errorHandler, type HttpResponseError } from '@/middleware';
+import { errorHandler, type HttpResponseError } from '@/utils';
 
 // Get folder's accesses
 export const getFolderAccesses = (req: Request, res: Response) => {

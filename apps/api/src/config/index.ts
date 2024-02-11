@@ -1,2 +1,2 @@
 export * from './config';
-export * from './dbClient';
+export * from './db-client';

@@ -1,8 +1,7 @@
 import type { Request, Response } from 'express';
 
 import { dbEnums } from '@/config';
-import type { HttpResponseError } from '@/middleware';
-import { errorHandler } from '@/middleware';
+import { errorHandler, type HttpResponseError } from '@/utils';
 
 // Get roles
 export const getRoles = (req: Request, res: Response) => {

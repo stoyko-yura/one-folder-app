@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
 import { userControllers } from '@/controllers';
-import { checkValidation, pagination, putUserValidation } from '@/middleware';
+import { checkValidation, pagination, userValidation } from '@/middleware';
 
 const router: Router = Router();
 
@@ -18,9 +18,9 @@ router.get('/:userId/comments', pagination, userControllers.getUserComments);
 router.get('/:userId/folders', pagination, userControllers.getUserFolders);
 
 // Put user
-router.put('/:userId', putUserValidation, checkValidation, userControllers.putUser);
+router.put('/:userId', userValidation.putUserValidation, checkValidation, userControllers.putUser);
 
 // Delete user
 router.delete('/:userId', userControllers.deleteUser);
 
-export const userRoutes = router;
+export const userRouter = router;

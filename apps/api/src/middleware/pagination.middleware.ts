@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 
-import { HttpResponseError, errorHandler } from './errorHandler';
+import { HttpResponseError, errorHandler } from '@/utils';
 
 export const pagination = (req: Request, res: Response, next: NextFunction) => {
   try {
