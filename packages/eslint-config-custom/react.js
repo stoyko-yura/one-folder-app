@@ -10,6 +10,7 @@ module.exports = {
     'airbnb-base',
     'airbnb/hooks',
     'plugin:react/recommended',
+    'plugin:react-hooks/recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:prettier/recommended'
   ],
@@ -20,7 +21,7 @@ module.exports = {
   },
   root: true,
   parser: '@typescript-eslint/parser',
-  plugins: ['react', '@typescript-eslint', 'import', 'prettier'],
+  plugins: ['react', '@typescript-eslint', 'import', 'prettier', 'react-refresh'],
   ignorePatterns: ['vite.config.ts'],
   rules: {
     'prettier/prettier': [
