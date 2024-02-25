@@ -1,0 +1,26 @@
+.custom-nav-link {
+  display: block;
+  line-height: 1;
+  padding: rem(11px) rem(18px);
+  border-radius: var(--mantine-radius-sm);
+  text-decoration: none;
+  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-0));
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 500;
+
+  @mixin hover {
+    background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
+  }
+
+  [data-mantine-color-scheme] &.is-active {
+    background-color: var(--mantine-color-blue-filled);
+    color: var(--mantine-color-white);
+    font-weight: 700;
+  }
+
+  @media (max-width: $mantine-breakpoint-xs) {
+    width: 100%;
+    text-align: center;
+    border-radius: 0;
+  }
+}
