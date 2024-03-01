@@ -15,6 +15,14 @@ const router = createBrowserRouter([
         path: '/folders'
       },
       {
+        element: <div>Hello world</div>,
+        path: '/folders/:folderId'
+      },
+      {
+        element: <div>Create new folder page</div>,
+        path: '/create-folder'
+      },
+      {
         element: <div>Software page</div>,
         path: '/software'
       },

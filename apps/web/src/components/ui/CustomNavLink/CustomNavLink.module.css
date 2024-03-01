@@ -18,9 +18,8 @@
     font-weight: 700;
   }
 
-  @media (max-width: $mantine-breakpoint-xs) {
+  @media (max-width: $mantine-breakpoint-md) {
     width: 100%;
     text-align: center;
-    border-radius: 0;
   }
 }

@@ -25,9 +25,9 @@ export class HttpResponseError extends Error {
 export const errorHandler = (error: HttpResponseError, res: Response) => {
   const code = HttpStatusCode[error.status];
 
-  console.log(
-    `[${error.status}]: ${error.message} ${error.description && `\n${error.description}`}`
-  );
+  const description = error.description ? `\n${error.description}` : '';
+
+  console.log(`[${error.status}]: ${error.message} ${description}`);
 
   res.status(code).json({
     message: error.message,
