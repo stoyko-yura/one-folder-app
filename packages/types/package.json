@@ -6,7 +6,10 @@
   "types": "dist/index.d.ts",
   "module": "dist/index.js",
   "scripts": {
-    "build": "tsc"
+    "lint": "eslint . --ext .js,.cjs,.ts",
+    "lint:fix": "eslint . --ext .js,.cjs,.ts --fix",
+    "build": "tsc",
+    "predev": "tsc"
   },
   "devDependencies": {
     "@one-folder-app/database": "workspace:*",

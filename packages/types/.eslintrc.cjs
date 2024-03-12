@@ -4,6 +4,5 @@ module.exports = {
     project: './tsconfig.json',
     root: true,
     tsconfigRootDir: __dirname
-  },
-  ignorePatterns: ['dist', '.eslintrc.cjs']
+  }
 };

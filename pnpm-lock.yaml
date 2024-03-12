@@ -54,6 +54,9 @@ importers:
       '@one-folder-app/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig
+      '@one-folder-app/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       '@types/bcrypt':
         specifier: ^5.0.2
         version: 5.0.2
