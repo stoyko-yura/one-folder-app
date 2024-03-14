@@ -24,6 +24,7 @@
   "devDependencies": {
     "@one-folder-app/eslint-config-custom": "workspace:*",
     "@one-folder-app/tsconfig": "workspace:*",
+    "@one-folder-app/types": "workspace:*",
     "@types/bcrypt": "^5.0.2",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",

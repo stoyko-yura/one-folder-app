@@ -1,17 +1,32 @@
-import type { Request, Response } from 'express';
+import type { Request } from 'express';
 
 import { getPaginationLinks } from '@/middleware';
 import { commentServices, folderServices, userServices } from '@/services';
+import type {
+  DeleteCommentRequest,
+  DeleteCommentResponse,
+  GetCommentRatingsRequest,
+  GetCommentRatingsResponse,
+  GetCommentRequest,
+  GetCommentResponse,
+  GetCommentsRequest,
+  GetCommentsResponse,
+  PostCommentRequest,
+  PostCommentResponse,
+  PutCommentRequest,
+  PutCommentResponse
+} from '@/types';
 import { HttpResponseError, errorHandler } from '@/utils';
 
 // Get comments
-export const getComments = async (req: Request, res: Response) => {
+export const getComments = async (req: GetCommentsRequest, res: GetCommentsResponse) => {
   try {
-    const { page, limit, pageIndex } = req.query;
+    const { limit, page, pageIndex, orderBy } = req.query;
 
-    const comments = await commentServices.findCommentsWithPagination({
-      limit: Number(limit),
-      pageIndex: Number(pageIndex)
+    const comments = await commentServices.getCommentsWithPagination({
+      limit,
+      orderBy,
+      pageIndex
     });
 
     if (!comments) {
@@ -22,9 +37,13 @@ export const getComments = async (req: Request, res: Response) => {
     }
 
     const totalComments = await commentServices.getTotalComments();
-    const totalPages = Math.ceil(totalComments / Number(limit));
+    const totalPages = Math.ceil(totalComments / limit);
 
-    const links = getPaginationLinks(req, { limit: Number(limit), page: Number(page), totalPages });
+    const links = getPaginationLinks(req as unknown as Request, {
+      limit,
+      page,
+      totalPages
+    });
 
     res.status(200).json({
       comments,
@@ -40,11 +59,11 @@ export const getComments = async (req: Request, res: Response) => {
 };
 
 // Get comment
-export const getComment = async (req: Request, res: Response) => {
+export const getComment = async (req: GetCommentRequest, res: GetCommentResponse) => {
   try {
     const { commentId } = req.params;
 
-    const comment = await commentServices.findCommentById(commentId);
+    const comment = await commentServices.getCommentById(commentId);
 
     if (!comment) {
       throw new HttpResponseError({
@@ -65,12 +84,15 @@ export const getComment = async (req: Request, res: Response) => {
 };
 
 // Get comment's ratings
-export const getCommentRatings = async (req: Request, res: Response) => {
+export const getCommentRatings = async (
+  req: GetCommentRatingsRequest,
+  res: GetCommentRatingsResponse
+) => {
   try {
-    const { page, limit, pageIndex } = req.query;
+    const { limit, page, pageIndex, orderBy } = req.query;
     const { commentId } = req.params;
 
-    const comment = await commentServices.findCommentById(commentId);
+    const comment = await commentServices.getCommentById(commentId);
 
     if (!comment) {
       throw new HttpResponseError({
@@ -81,11 +103,9 @@ export const getCommentRatings = async (req: Request, res: Response) => {
     }
 
     const commentRatings = await commentServices.getCommentRatingsWithPagination(commentId, {
-      limit: Number(limit),
-      orderBy: {
-        createdAt: 'asc'
-      },
-      pageIndex: Number(pageIndex)
+      limit,
+      orderBy,
+      pageIndex
     });
 
     if (!commentRatings) {
@@ -96,9 +116,13 @@ export const getCommentRatings = async (req: Request, res: Response) => {
     }
 
     const totalCommentRatings = await commentServices.getTotalCommentRatings(commentId);
-    const totalPages = Math.ceil(totalCommentRatings / Number(limit));
+    const totalPages = Math.ceil(totalCommentRatings / limit);
 
-    const links = getPaginationLinks(req, { limit: Number(limit), page: Number(page), totalPages });
+    const links = getPaginationLinks(req as unknown as Request, {
+      limit,
+      page,
+      totalPages
+    });
 
     res.status(200).json({
       commentRatings,
@@ -114,11 +138,11 @@ export const getCommentRatings = async (req: Request, res: Response) => {
 };
 
 // Post comment
-export const postComment = async (req: Request, res: Response) => {
+export const postComment = async (req: PostCommentRequest, res: PostCommentResponse) => {
   try {
     const { authorId, folderId, message } = req.body;
 
-    const user = await userServices.findUserById(authorId);
+    const user = await userServices.getUserById(authorId);
 
     if (!user) {
       throw new HttpResponseError({
@@ -128,7 +152,7 @@ export const postComment = async (req: Request, res: Response) => {
       });
     }
 
-    const folder = await folderServices.findFolderById(folderId);
+    const folder = await folderServices.getFolderById(folderId);
 
     if (!folder) {
       throw new HttpResponseError({
@@ -138,7 +162,7 @@ export const postComment = async (req: Request, res: Response) => {
       });
     }
 
-    const existComment = await commentServices.findCommentByAuthorIdAndFolderId(authorId, folderId);
+    const existComment = await commentServices.getCommentByAuthorIdAndFolderId(authorId, folderId);
 
     if (existComment) {
       throw new HttpResponseError({
@@ -148,7 +172,7 @@ export const postComment = async (req: Request, res: Response) => {
       });
     }
 
-    const createdComment = await commentServices.createComment({
+    const createdComment = await commentServices.postComment({
       authorId,
       folderId,
       message
@@ -165,12 +189,12 @@ export const postComment = async (req: Request, res: Response) => {
 };
 
 // Put comment
-export const putComment = async (req: Request, res: Response) => {
+export const putComment = async (req: PutCommentRequest, res: PutCommentResponse) => {
   try {
     const { commentId } = req.params;
     const { message } = req.body;
 
-    const comment = await commentServices.findCommentById(commentId);
+    const comment = await commentServices.getCommentById(commentId);
 
     if (!comment) {
       throw new HttpResponseError({
@@ -180,7 +204,7 @@ export const putComment = async (req: Request, res: Response) => {
       });
     }
 
-    const editedComment = await commentServices.updateComment(commentId, {
+    const editedComment = await commentServices.putComment(commentId, {
       message
     });
 
@@ -195,11 +219,11 @@ export const putComment = async (req: Request, res: Response) => {
 };
 
 // Delete comment
-export const deleteComment = async (req: Request, res: Response) => {
+export const deleteComment = async (req: DeleteCommentRequest, res: DeleteCommentResponse) => {
   try {
     const { commentId } = req.params;
 
-    const comment = await commentServices.findCommentById(commentId);
+    const comment = await commentServices.getCommentById(commentId);
 
     if (!comment) {
       throw new HttpResponseError({

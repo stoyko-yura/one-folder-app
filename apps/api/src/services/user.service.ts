@@ -1,11 +1,17 @@
-import type { Comment, Folder, Prisma, User } from '@one-folder-app/database';
+import type { Comment, Folder, User } from '@one-folder-app/database';
+import type {
+  GetUserCommentsPaginationParams,
+  GetUserFoldersPaginationParams,
+  GetUsersPaginationParams,
+  PutUserRequestBody,
+  SignUpRequestBody
+} from '@one-folder-app/types';
 
 import { dbClient } from '@/config';
-import type { PaginationOptions } from '@/types';
 
-export const findUserById = async (
+export const getUserById = async (
   id: string,
-  options: { withInclude?: boolean } = { withInclude: false }
+  options: { withInclude: boolean } = { withInclude: false }
 ): Promise<User | null> => {
   const { withInclude } = options;
 
@@ -31,7 +37,7 @@ export const findUserById = async (
   return user;
 };
 
-export const findUserByLogin = async (login: string): Promise<User | null> => {
+export const getUserByLogin = async (login: string): Promise<User | null> => {
   const user = await dbClient.user.findUnique({
     where: {
       login
@@ -41,7 +47,7 @@ export const findUserByLogin = async (login: string): Promise<User | null> => {
   return user;
 };
 
-export const findUserByEmailOrLogin = async (params: {
+export const getUserByEmailOrLogin = async (params: {
   email?: string;
   login?: string;
 }): Promise<User | null> => {
@@ -63,16 +69,10 @@ export const findUserByEmailOrLogin = async (params: {
   return user;
 };
 
-export const findUsersWithPagination = async (
-  options: PaginationOptions<Prisma.UserOrderByWithAggregationInput> = {
-    limit: 10,
-    orderBy: {
-      createdAt: 'asc'
-    },
-    pageIndex: 0
-  }
+export const getUsersWithPagination = async (
+  options: GetUsersPaginationParams
 ): Promise<User[] | null> => {
-  const { limit, orderBy, pageIndex } = options;
+  const { limit = 10, pageIndex = 0, orderBy = { createdAt: 'asc' } } = options;
 
   const users = await dbClient.user.findMany({
     include: {
@@ -94,17 +94,11 @@ export const findUsersWithPagination = async (
   return users;
 };
 
-export const findUserCommentsWithPagination = async (
+export const getUserCommentsWithPagination = async (
   userId: string,
-  options: PaginationOptions<Prisma.CommentOrderByWithAggregationInput> = {
-    limit: 10,
-    orderBy: {
-      createdAt: 'asc'
-    },
-    pageIndex: 0
-  }
+  options: GetUserCommentsPaginationParams
 ): Promise<Comment[] | null> => {
-  const { limit, orderBy, pageIndex } = options;
+  const { limit = 10, pageIndex = 0, orderBy = { createdAt: 'asc' } } = options;
 
   const userComments = await dbClient.comment.findMany({
     orderBy,
@@ -120,17 +114,11 @@ export const findUserCommentsWithPagination = async (
   return userComments;
 };
 
-export const findUserFoldersWithPagination = async (
+export const getUserFoldersWithPagination = async (
   userId: string,
-  options: PaginationOptions<Prisma.FolderOrderByWithAggregationInput> = {
-    limit: 10,
-    orderBy: {
-      createdAt: 'asc'
-    },
-    pageIndex: 0
-  }
+  options: GetUserFoldersPaginationParams
 ): Promise<Folder[] | null> => {
-  const { limit, orderBy, pageIndex } = options;
+  const { limit = 10, pageIndex = 0, orderBy = { createdAt: 'asc' } } = options;
 
   const userFolders = await dbClient.folder.findMany({
     orderBy,
@@ -146,15 +134,41 @@ export const findUserFoldersWithPagination = async (
   return userFolders;
 };
 
-export const createUser = (data: Prisma.UserCreateInput): Promise<User> => {
-  const user = dbClient.user.create({ data });
+export const postUser = (data: SignUpRequestBody): Promise<User> => {
+  const { bio, email, login, password, username } = data;
+
+  const user = dbClient.user.create({
+    data: {
+      email,
+      hash: password,
+      login,
+      profile: {
+        create: {
+          bio,
+          username
+        }
+      }
+    }
+  });
 
   return user;
 };
 
-export const updateUser = async (id: string, data: Prisma.UserUpdateInput): Promise<User> => {
+export const putUser = async (id: string, data: PutUserRequestBody): Promise<User> => {
+  const { email, login, bio, role, username } = data;
+
   const user = await dbClient.user.update({
-    data,
+    data: {
+      email,
+      login,
+      profile: {
+        update: {
+          bio: bio || null,
+          username: username || null
+        }
+      },
+      role
+    },
     where: {
       id
     }

@@ -1,10 +1,12 @@
-import type { Request, Response } from 'express';
-
 import { dbEnums } from '@/config';
+import type { GetFolderAccessesRequest, GetFolderAccessesResponse } from '@/types';
 import { errorHandler, type HttpResponseError } from '@/utils';
 
 // Get folder's accesses
-export const getFolderAccesses = (req: Request, res: Response) => {
+export const getFolderAccesses = (
+  req: GetFolderAccessesRequest,
+  res: GetFolderAccessesResponse
+) => {
   try {
     const { accesses } = dbEnums;
 

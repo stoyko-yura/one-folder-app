@@ -1,20 +1,31 @@
-import type { Request, Response } from 'express';
+import type { RatingData } from '@one-folder-app/types';
+import type { Request } from 'express';
 
 import { getPaginationLinks } from '@/middleware';
 import { commonServices, ratingServices, userServices } from '@/services';
+import type {
+  DeleteRatingRequest,
+  DeleteRatingResponse,
+  GetRatingRequest,
+  GetRatingResponse,
+  GetRatingsRequest,
+  GetRatingsResponse,
+  PostRatingRequest,
+  PostRatingResponse,
+  PutRatingRequest,
+  PutRatingResponse
+} from '@/types';
 import { HttpResponseError, capitalize, errorHandler } from '@/utils';
 
 // Get ratings
-export const getRatings = async (req: Request, res: Response) => {
+export const getRatings = async (req: GetRatingsRequest, res: GetRatingsResponse) => {
   try {
-    const { page, limit, pageIndex } = req.query;
+    const { limit, page, pageIndex, orderBy } = req.query;
 
-    const ratings = await ratingServices.findRatingsWithPagination({
-      limit: Number(limit),
-      orderBy: {
-        createdAt: 'asc'
-      },
-      pageIndex: Number(pageIndex)
+    const ratings = await ratingServices.getRatingsWithPagination({
+      limit,
+      orderBy,
+      pageIndex
     });
 
     if (!ratings) {
@@ -25,9 +36,9 @@ export const getRatings = async (req: Request, res: Response) => {
     }
 
     const totalRatings = await ratingServices.getTotalRatings();
-    const totalPages = Math.ceil(totalRatings / Number(limit));
+    const totalPages = Math.ceil(totalRatings / limit);
 
-    const links = getPaginationLinks(req, { limit: Number(limit), page: Number(page), totalPages });
+    const links = getPaginationLinks(req as unknown as Request, { limit, page, totalPages });
 
     res.status(200).json({
       links,
@@ -43,11 +54,11 @@ export const getRatings = async (req: Request, res: Response) => {
 };
 
 // Get rating
-export const getRating = async (req: Request, res: Response) => {
+export const getRating = async (req: GetRatingRequest, res: GetRatingResponse) => {
   try {
     const { ratingId } = req.params;
 
-    const rating = await ratingServices.findRatingById(ratingId);
+    const rating = await ratingServices.getRatingById(ratingId);
 
     if (!rating) {
       throw new HttpResponseError({
@@ -68,18 +79,11 @@ export const getRating = async (req: Request, res: Response) => {
 };
 
 // Post rating
-export const postRating = async (req: Request, res: Response) => {
+export const postRating = async (req: PostRatingRequest, res: PostRatingResponse) => {
   try {
-    const { commentId, softwareId, folderId, userId, rating } = req.body;
+    const { rating, userId, commentId, folderId, softwareId } = req.body;
 
-    if (!commentId && !folderId && !softwareId) {
-      throw new HttpResponseError({
-        message: 'Please provide a comment, folder or software id',
-        status: 'BAD_REQUEST'
-      });
-    }
-
-    const user = await userServices.findUserById(userId);
+    const user = await userServices.getUserById(userId);
 
     if (!user) {
       throw new HttpResponseError({
@@ -91,15 +95,22 @@ export const postRating = async (req: Request, res: Response) => {
 
     const entityId = commentId || folderId || softwareId;
 
+    if (!entityId) {
+      throw new HttpResponseError({
+        message: 'Please provide a comment, folder or software id',
+        status: 'BAD_REQUEST'
+      });
+    }
+
     const entityNames = {
-      [commentId]: 'comment',
-      [folderId]: 'folder',
-      [softwareId]: 'software'
+      [commentId!]: 'comment',
+      [folderId!]: 'folder',
+      [softwareId!]: 'software'
     };
 
-    const entityName = entityNames[entityId];
+    const entityName = entityNames[entityId!];
 
-    const entity = await commonServices.findEntityById(entityId, entityName);
+    const entity = await commonServices.getEntityById(entityId, entityName);
 
     if (!entity) {
       throw new HttpResponseError({
@@ -109,7 +120,7 @@ export const postRating = async (req: Request, res: Response) => {
       });
     }
 
-    const existRating = await ratingServices.findRatingByEntityId(userId, entityId);
+    const existRating = await ratingServices.getRatingByEntityId(userId, entityId);
 
     if (existRating) {
       throw new HttpResponseError({
@@ -119,12 +130,12 @@ export const postRating = async (req: Request, res: Response) => {
       });
     }
 
-    const createdRating = await ratingServices.createRating({
-      authorId: userId,
+    const createdRating = await ratingServices.postRating({
       commentId,
       folderId,
-      rating: Number(rating),
-      softwareId
+      rating,
+      softwareId,
+      userId
     });
 
     const averageRating = await ratingServices.getAverageRating(entityId);
@@ -136,7 +147,7 @@ export const postRating = async (req: Request, res: Response) => {
       });
     }
 
-    const editedEntity = await ratingServices.updateRatingInEntity({
+    const editedEntity = await ratingServices.putRatingInEntity({
       averageRating,
       entityId,
       entityName
@@ -145,7 +156,7 @@ export const postRating = async (req: Request, res: Response) => {
     res.status(200).json({
       [entityName]: editedEntity,
       message: `${capitalize(entityName)} rated`,
-      rating: createdRating,
+      rating: createdRating as RatingData,
       success: true
     });
   } catch (error) {
@@ -154,12 +165,20 @@ export const postRating = async (req: Request, res: Response) => {
 };
 
 // Put rating
-export const putRating = async (req: Request, res: Response) => {
+export const putRating = async (req: PutRatingRequest, res: PutRatingResponse) => {
   try {
     const { ratingId } = req.params;
-    const { userId, rating } = req.body;
+    const { rating, userId } = req.body;
 
-    const user = await userServices.findUserById(userId);
+    if (!userId) {
+      throw new HttpResponseError({
+        description: "userId can't be nullable",
+        message: 'userId is required',
+        status: 'NO_CONTENT'
+      });
+    }
+
+    const user = await userServices.getUserById(userId);
 
     if (!user) {
       throw new HttpResponseError({
@@ -169,7 +188,7 @@ export const putRating = async (req: Request, res: Response) => {
       });
     }
 
-    const existRating = await ratingServices.findRatingById(ratingId);
+    const existRating = await ratingServices.getRatingById(ratingId);
 
     if (!existRating) {
       throw new HttpResponseError({
@@ -179,7 +198,7 @@ export const putRating = async (req: Request, res: Response) => {
       });
     }
 
-    const editedRating = await ratingServices.updateRating(ratingId, { rating });
+    const editedRating = await ratingServices.putRating(ratingId, { rating });
 
     const entityId = existRating.commentId || existRating.folderId || existRating.softwareId;
 
@@ -191,14 +210,14 @@ export const putRating = async (req: Request, res: Response) => {
     }
 
     const entityNames = {
-      [existRating.commentId || '']: 'comment',
-      [existRating.folderId || '']: 'folder',
-      [existRating.softwareId || '']: 'software'
+      [existRating.commentId!]: 'comment',
+      [existRating.folderId!]: 'folder',
+      [existRating.softwareId!]: 'software'
     };
 
     const entityName = entityNames[entityId];
 
-    const entity = await commonServices.findEntityById(entityId, entityName);
+    const entity = await commonServices.getEntityById(entityId, entityName);
 
     if (!entity) {
       throw new HttpResponseError({
@@ -217,7 +236,7 @@ export const putRating = async (req: Request, res: Response) => {
       });
     }
 
-    const editedEntity = await ratingServices.updateRatingInEntity({
+    const editedEntity = await ratingServices.putRatingInEntity({
       averageRating,
       entityId,
       entityName
@@ -226,7 +245,7 @@ export const putRating = async (req: Request, res: Response) => {
     res.status(200).json({
       [entityName]: editedEntity,
       message: `${capitalize(entityName)}'s rating edited`,
-      rating: editedRating,
+      rating: editedRating as RatingData,
       success: true
     });
   } catch (error) {
@@ -235,11 +254,11 @@ export const putRating = async (req: Request, res: Response) => {
 };
 
 // Delete rating
-export const deleteRating = async (req: Request, res: Response) => {
+export const deleteRating = async (req: DeleteRatingRequest, res: DeleteRatingResponse) => {
   try {
     const { ratingId } = req.params;
 
-    const rating = await ratingServices.findRatingById(ratingId);
+    const rating = await ratingServices.getRatingById(ratingId);
 
     if (!rating) {
       throw new HttpResponseError({

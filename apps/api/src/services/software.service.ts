@@ -1,9 +1,18 @@
-import type { Category, Folder, Prisma, Rating, Software } from '@one-folder-app/database';
+import type { Category, Folder, Rating, Software } from '@one-folder-app/database';
+import type {
+  GetSoftwareCategoriesPaginationParams,
+  GetSoftwareFoldersPaginationParams,
+  GetSoftwareRatingsPaginationParams,
+  GetSoftwaresPaginationParams,
+  PostSoftwareRequestBody,
+  PutSoftwareCategoriesRequestBody,
+  PutSoftwareRequestBody,
+  SoftwareData
+} from '@one-folder-app/types';
 
 import { dbClient } from '@/config';
-import type { PaginationOptions } from '@/types';
 
-export const findSoftwareById = async (id: string): Promise<Software | null> => {
+export const getSoftwareById = async (id: string): Promise<Software | null> => {
   const software = await dbClient.software.findUnique({
     include: {
       _count: {
@@ -23,7 +32,7 @@ export const findSoftwareById = async (id: string): Promise<Software | null> => 
   return software;
 };
 
-export const findSoftwareByName = async (name: string): Promise<Software | null> => {
+export const getSoftwareByName = async (name: string): Promise<Software | null> => {
   const software = await dbClient.software.findFirst({
     where: {
       name
@@ -33,16 +42,10 @@ export const findSoftwareByName = async (name: string): Promise<Software | null>
   return software;
 };
 
-export const findSoftwareWithPagination = async (
-  options: PaginationOptions<Prisma.SoftwareOrderByWithAggregationInput> = {
-    limit: 10,
-    orderBy: {
-      name: 'asc'
-    },
-    pageIndex: 0
-  }
+export const getSoftwareWithPagination = async (
+  options: GetSoftwaresPaginationParams
 ): Promise<Software[] | null> => {
-  const { limit, orderBy, pageIndex } = options;
+  const { limit = 10, pageIndex = 0, orderBy = { name: 'asc' } } = options;
 
   const software = await dbClient.software.findMany({
     include: {
@@ -65,17 +68,11 @@ export const findSoftwareWithPagination = async (
   return software;
 };
 
-export const findSoftwareFoldersWithPagination = async (
+export const getSoftwareFoldersWithPagination = async (
   softwareId: string,
-  options: PaginationOptions<Prisma.FolderOrderByWithAggregationInput> = {
-    limit: 10,
-    orderBy: {
-      createdAt: 'asc'
-    },
-    pageIndex: 0
-  }
+  options: GetSoftwareFoldersPaginationParams
 ): Promise<Folder[] | null> => {
-  const { limit, orderBy, pageIndex } = options;
+  const { limit = 10, pageIndex = 0, orderBy = { createdAt: 'asc' } } = options;
 
   const softwareFolders = await dbClient.folder.findMany({
     orderBy,
@@ -95,17 +92,11 @@ export const findSoftwareFoldersWithPagination = async (
   return softwareFolders;
 };
 
-export const findSoftwareRatingsWithPagination = async (
+export const getSoftwareRatingsWithPagination = async (
   softwareId: string,
-  options: PaginationOptions<Prisma.RatingOrderByWithAggregationInput> = {
-    limit: 10,
-    orderBy: {
-      createdAt: 'asc'
-    },
-    pageIndex: 0
-  }
+  options: GetSoftwareRatingsPaginationParams
 ): Promise<Rating[] | null> => {
-  const { limit, orderBy, pageIndex } = options;
+  const { limit = 10, pageIndex = 0, orderBy = { createdAt: 'asc' } } = options;
 
   const softwareRatings = await dbClient.rating.findMany({
     orderBy,
@@ -121,17 +112,11 @@ export const findSoftwareRatingsWithPagination = async (
   return softwareRatings;
 };
 
-export const findSoftwareCategoriesWithPagination = async (
+export const getSoftwareCategoriesWithPagination = async (
   softwareId: string,
-  options: PaginationOptions<Prisma.CategoryOrderByWithAggregationInput> = {
-    limit: 10,
-    orderBy: {
-      name: 'asc'
-    },
-    pageIndex: 0
-  }
+  options: GetSoftwareCategoriesPaginationParams
 ): Promise<Category[] | null> => {
-  const { limit, orderBy, pageIndex } = options;
+  const { limit = 10, pageIndex = 0, orderBy = { name: 'asc' } } = options;
 
   const softwareCategories = await dbClient.category.findMany({
     orderBy,
@@ -151,9 +136,19 @@ export const findSoftwareCategoriesWithPagination = async (
   return softwareCategories;
 };
 
-export const createSoftware = async (data: Prisma.SoftwareCreateInput): Promise<Software> => {
+export const postSoftware = async (data: PostSoftwareRequestBody): Promise<SoftwareData> => {
+  const { name, url, categoryIds = [], description, icon } = data;
+
   const software = await dbClient.software.create({
-    data,
+    data: {
+      categories: {
+        connect: categoryIds.map((categoryId: string) => ({ id: categoryId }))
+      },
+      description,
+      icon,
+      name,
+      url
+    },
     include: {
       categories: true
     }
@@ -162,12 +157,19 @@ export const createSoftware = async (data: Prisma.SoftwareCreateInput): Promise<
   return software;
 };
 
-export const updateSoftware = async (
+export const putSoftware = async (
   id: string,
-  data: Prisma.SoftwareUpdateInput
-): Promise<Software> => {
+  data: PutSoftwareRequestBody
+): Promise<SoftwareData> => {
+  const { name, url, description, icon } = data;
+
   const software = await dbClient.software.update({
-    data,
+    data: {
+      description,
+      icon,
+      name,
+      url
+    },
     where: {
       id
     }
@@ -176,10 +178,12 @@ export const updateSoftware = async (
   return software;
 };
 
-export const updateSoftwareCategories = async (
+export const putSoftwareCategories = async (
   softwareId: string,
-  categoryIds: string[]
-): Promise<Software> => {
+  data: PutSoftwareCategoriesRequestBody
+): Promise<SoftwareData> => {
+  const { categoryIds } = data;
+
   const updatedSoftware = await dbClient.software.update({
     data: {
       categories: {
@@ -214,3 +218,16 @@ export const getTotalSoftwareRatings = async (id: string): Promise<number> =>
 
 export const getTotalSoftwareCategories = async (id: string): Promise<number> =>
   dbClient.category.count({ where: { software: { some: { id } } } });
+
+export const getAverageSoftwareRating = async (id: string): Promise<number | null> => {
+  const aggregatedRating = await dbClient.rating.aggregate({
+    _avg: {
+      rating: true
+    },
+    where: {
+      softwareId: id
+    }
+  });
+
+  return aggregatedRating._avg.rating;
+};

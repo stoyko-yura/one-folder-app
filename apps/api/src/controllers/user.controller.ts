@@ -1,20 +1,33 @@
-import type { Request, Response } from 'express';
+import type { UserData } from '@one-folder-app/types';
+import type { Request } from 'express';
 
 import { getPaginationLinks } from '@/middleware';
 import { userServices } from '@/services';
+import type {
+  DeleteUserRequest,
+  DeleteUserResponse,
+  GetUserCommentsRequest,
+  GetUserCommentsResponse,
+  GetUserFoldersRequest,
+  GetUserFoldersResponse,
+  GetUserRequest,
+  GetUserResponse,
+  GetUsersRequest,
+  GetUsersResponse,
+  PutUserRequest,
+  PutUserResponse
+} from '@/types';
 import { HttpResponseError, errorHandler, excludeFields } from '@/utils';
 
 // Get users
-export const getUsers = async (req: Request, res: Response) => {
+export const getUsers = async (req: GetUsersRequest, res: GetUsersResponse) => {
   try {
-    const { page, limit, pageIndex } = req.query;
+    const { limit, page, pageIndex, orderBy } = req.query;
 
-    const users = await userServices.findUsersWithPagination({
-      limit: Number(limit),
-      orderBy: {
-        createdAt: 'asc'
-      },
-      pageIndex: Number(pageIndex)
+    const users = await userServices.getUsersWithPagination({
+      limit,
+      orderBy,
+      pageIndex
     });
 
     if (!users) {
@@ -25,9 +38,13 @@ export const getUsers = async (req: Request, res: Response) => {
     }
 
     const totalUsers = await userServices.getTotalUsers();
-    const totalPages = Math.ceil(totalUsers / Number(limit));
+    const totalPages = Math.ceil(totalUsers / limit);
 
-    const links = getPaginationLinks(req, { limit: Number(limit), page: Number(page), totalPages });
+    const links = getPaginationLinks(req as unknown as Request, {
+      limit,
+      page,
+      totalPages
+    });
 
     res.status(200).json({
       links,
@@ -35,7 +52,7 @@ export const getUsers = async (req: Request, res: Response) => {
       success: true,
       totalPages,
       totalUsers,
-      users: excludeFields(users, ['hash'])
+      users: excludeFields(users, ['hash']) as UserData[]
     });
   } catch (error) {
     errorHandler(error as HttpResponseError, res);
@@ -43,11 +60,11 @@ export const getUsers = async (req: Request, res: Response) => {
 };
 
 // Get user
-export const getUser = async (req: Request, res: Response) => {
+export const getUser = async (req: GetUserRequest, res: GetUserResponse) => {
   try {
     const { userId } = req.params;
 
-    const user = await userServices.findUserById(userId, { withInclude: true });
+    const user = await userServices.getUserById(userId, { withInclude: true });
 
     if (!user) {
       throw new HttpResponseError({
@@ -60,7 +77,7 @@ export const getUser = async (req: Request, res: Response) => {
     res.status(200).json({
       message: 'User loaded',
       success: true,
-      user: excludeFields(user, ['hash'])
+      user: excludeFields(user, ['hash']) as UserData
     });
   } catch (error) {
     errorHandler(error as HttpResponseError, res);
@@ -68,12 +85,15 @@ export const getUser = async (req: Request, res: Response) => {
 };
 
 // Get user's comments
-export const getUserComments = async (req: Request, res: Response) => {
+export const getUserComments = async (
+  req: GetUserCommentsRequest,
+  res: GetUserCommentsResponse
+) => {
   try {
-    const { page, limit, pageIndex } = req.query;
+    const { limit, page, pageIndex, orderBy } = req.query;
     const { userId } = req.params;
 
-    const user = await userServices.findUserById(userId);
+    const user = await userServices.getUserById(userId);
 
     if (!user) {
       throw new HttpResponseError({
@@ -83,12 +103,10 @@ export const getUserComments = async (req: Request, res: Response) => {
       });
     }
 
-    const userComments = await userServices.findUserCommentsWithPagination(userId, {
-      limit: Number(limit),
-      orderBy: {
-        createdAt: 'asc'
-      },
-      pageIndex: Number(pageIndex)
+    const userComments = await userServices.getUserCommentsWithPagination(userId, {
+      limit,
+      orderBy,
+      pageIndex
     });
 
     if (!userComments) {
@@ -99,9 +117,13 @@ export const getUserComments = async (req: Request, res: Response) => {
     }
 
     const totalUserComments = await userServices.getTotalUserComments(userId);
-    const totalPages = Math.ceil(totalUserComments / Number(limit));
+    const totalPages = Math.ceil(totalUserComments / limit);
 
-    const links = getPaginationLinks(req, { limit: Number(limit), page: Number(page), totalPages });
+    const links = getPaginationLinks(req as unknown as Request, {
+      limit,
+      page,
+      totalPages
+    });
 
     res.status(200).json({
       links,
@@ -117,12 +139,12 @@ export const getUserComments = async (req: Request, res: Response) => {
 };
 
 // Get user's folders
-export const getUserFolders = async (req: Request, res: Response) => {
+export const getUserFolders = async (req: GetUserFoldersRequest, res: GetUserFoldersResponse) => {
   try {
-    const { page, limit, pageIndex } = req.query;
+    const { limit, page, pageIndex, orderBy } = req.query;
     const { userId } = req.params;
 
-    const user = await userServices.findUserById(userId);
+    const user = await userServices.getUserById(userId);
 
     if (!user) {
       throw new HttpResponseError({
@@ -132,12 +154,10 @@ export const getUserFolders = async (req: Request, res: Response) => {
       });
     }
 
-    const userFolders = await userServices.findUserFoldersWithPagination(userId, {
-      limit: Number(limit),
-      orderBy: {
-        createdAt: 'asc'
-      },
-      pageIndex: Number(pageIndex)
+    const userFolders = await userServices.getUserFoldersWithPagination(userId, {
+      limit,
+      orderBy,
+      pageIndex
     });
 
     if (!userFolders) {
@@ -148,9 +168,9 @@ export const getUserFolders = async (req: Request, res: Response) => {
     }
 
     const totalUserFolders = await userServices.getTotalUserFolders(userId);
-    const totalPages = Math.ceil(totalUserFolders / Number(limit));
+    const totalPages = Math.ceil(totalUserFolders / limit);
 
-    const links = getPaginationLinks(req, { limit: Number(limit), page: Number(page), totalPages });
+    const links = getPaginationLinks(req as unknown as Request, { limit, page, totalPages });
 
     res.status(200).json({
       links,
@@ -166,12 +186,12 @@ export const getUserFolders = async (req: Request, res: Response) => {
 };
 
 // Put user
-export const putUser = async (req: Request, res: Response) => {
+export const putUser = async (req: PutUserRequest, res: PutUserResponse) => {
   try {
     const { userId } = req.params;
     const { email, login, bio, username, role } = req.body;
 
-    const user = await userServices.findUserById(userId);
+    const user = await userServices.getUserById(userId);
 
     if (!user) {
       throw new HttpResponseError({
@@ -181,22 +201,18 @@ export const putUser = async (req: Request, res: Response) => {
       });
     }
 
-    const editedUser = await userServices.updateUser(userId, {
+    const editedUser = await userServices.putUser(userId, {
+      bio,
       email,
       login,
-      profile: {
-        update: {
-          bio: bio || null,
-          username: username || null
-        }
-      },
-      role
+      role,
+      username
     });
 
     res.status(200).json({
       message: `User edited`,
       success: true,
-      user: excludeFields(editedUser, ['hash'])
+      user: excludeFields(editedUser, ['hash']) as UserData
     });
   } catch (error) {
     errorHandler(error as HttpResponseError, res);
@@ -204,11 +220,11 @@ export const putUser = async (req: Request, res: Response) => {
 };
 
 // Delete user
-export const deleteUser = async (req: Request, res: Response) => {
+export const deleteUser = async (req: DeleteUserRequest, res: DeleteUserResponse) => {
   try {
     const { userId } = req.params;
 
-    const user = await userServices.findUserById(userId);
+    const user = await userServices.getUserById(userId);
 
     if (!user) {
       throw new HttpResponseError({
