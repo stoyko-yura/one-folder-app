@@ -20,7 +20,7 @@ export interface SoftwareData extends Software {
 
 // Get software
 export interface GetSoftwareRequestParams {
-  softwareId: string;
+  softwareId?: string;
 }
 
 export interface GetSoftwareResponseBody extends BaseResponseBody {
@@ -31,7 +31,7 @@ export interface GetSoftwareResponseBody extends BaseResponseBody {
 export interface GetSoftwaresPaginationParams extends SoftwarePaginationOptions {}
 
 export interface GetSoftwaresRequestQueries extends SoftwarePaginationOptions {
-  page: number;
+  page?: number;
 }
 
 export interface GetSoftwaresResponseBody extends BaseResponseBody {
@@ -43,13 +43,13 @@ export interface GetSoftwaresResponseBody extends BaseResponseBody {
 
 // Get software's ratings
 export interface GetSoftwareRatingsRequestParams {
-  softwareId: string;
+  softwareId?: string;
 }
 
 export interface GetSoftwareRatingsPaginationParams extends SoftwareRatingsPaginationOptions {}
 
 export interface GetSoftwareRatingsRequestQueries extends SoftwareRatingsPaginationOptions {
-  page: number;
+  page?: number;
 }
 
 export interface GetSoftwareRatingsResponseBody extends BaseResponseBody {
@@ -62,14 +62,14 @@ export interface GetSoftwareRatingsResponseBody extends BaseResponseBody {
 
 // Get software's categories
 export interface GetSoftwareCategoriesRequestParams {
-  softwareId: string;
+  softwareId?: string;
 }
 
 export interface GetSoftwareCategoriesPaginationParams
   extends SoftwareCategoriesPaginationOptions {}
 
 export interface GetSoftwareCategoriesRequestQueries extends SoftwareCategoriesPaginationOptions {
-  page: number;
+  page?: number;
 }
 
 export interface GetSoftwareCategoriesResponseBody extends BaseResponseBody {
@@ -81,13 +81,13 @@ export interface GetSoftwareCategoriesResponseBody extends BaseResponseBody {
 
 // Get software's folders
 export interface GetSoftwareFoldersRequestParams {
-  softwareId: string;
+  softwareId?: string;
 }
 
 export interface GetSoftwareFoldersPaginationParams extends SoftwareFoldersPaginationOptions {}
 
 export interface GetSoftwareFoldersRequestQueries extends SoftwareFoldersPaginationOptions {
-  page: number;
+  page?: number;
 }
 
 export interface GetSoftwareFoldersResponseBody extends BaseResponseBody {
@@ -112,7 +112,7 @@ export interface PostSoftwareResponseBody extends BaseResponseBody {
 
 // Put Software
 export interface PutSoftwareRequestParams {
-  softwareId: string;
+  softwareId?: string;
 }
 
 export interface PutSoftwareRequestBody {
@@ -128,7 +128,7 @@ export interface PutSoftwareResponseBody extends BaseResponseBody {
 
 // Put software's categories
 export interface PutSoftwareCategoriesRequestParams {
-  softwareId: string;
+  softwareId?: string;
 }
 
 export interface PutSoftwareCategoriesRequestBody {
@@ -141,7 +141,7 @@ export interface PutSoftwareCategoriesResponseBody extends BaseResponseBody {
 
 // Delete software
 export interface DeleteSoftwareRequestParams {
-  softwareId: string;
+  softwareId?: string;
 }
 
 export interface DeleteSoftwareResponseBody extends BaseResponseBody {}

@@ -2,12 +2,12 @@ import type {
   DeleteCommentRequestParams,
   DeleteCommentResponseBody,
   EmptyObject,
-  GetCategoriesRequestQueries,
   GetCommentRatingsRequestParams,
   GetCommentRatingsRequestQueries,
   GetCommentRatingsResponseBody,
   GetCommentRequestParams,
   GetCommentResponseBody,
+  GetCommentsRequestQueries,
   GetCommentsResponseBody,
   PostCommentRequestBody,
   PostCommentResponseBody,
@@ -33,7 +33,7 @@ export type GetCommentsRequest = Request<
   EmptyObject,
   GetCommentsResponseBody,
   EmptyObject,
-  GetCategoriesRequestQueries
+  GetCommentsRequestQueries
 >;
 
 export type GetCommentsResponse = Response<GetCommentsResponseBody>;

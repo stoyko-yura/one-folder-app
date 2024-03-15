@@ -22,7 +22,7 @@ import { HttpResponseError, errorHandler, excludeFields } from '@/utils';
 // Get users
 export const getUsers = async (req: GetUsersRequest, res: GetUsersResponse) => {
   try {
-    const { limit, page, pageIndex, orderBy } = req.query;
+    const { limit = 10, page = 1, pageIndex = 0, orderBy } = req.query;
 
     const users = await userServices.getUsersWithPagination({
       limit,
@@ -40,11 +40,7 @@ export const getUsers = async (req: GetUsersRequest, res: GetUsersResponse) => {
     const totalUsers = await userServices.getTotalUsers();
     const totalPages = Math.ceil(totalUsers / limit);
 
-    const links = getPaginationLinks(req as unknown as Request, {
-      limit,
-      page,
-      totalPages
-    });
+    const links = getPaginationLinks(req as Request, { limit, page, totalPages });
 
     res.status(200).json({
       links,
@@ -90,8 +86,16 @@ export const getUserComments = async (
   res: GetUserCommentsResponse
 ) => {
   try {
-    const { limit, page, pageIndex, orderBy } = req.query;
+    const { limit = 10, page = 1, pageIndex = 0, orderBy = { createdAt: 'asc' } } = req.query;
     const { userId } = req.params;
+
+    if (!userId) {
+      throw new HttpResponseError({
+        description: 'userId is required. Please check your params',
+        message: 'userId is required',
+        status: 'FORBIDDEN'
+      });
+    }
 
     const user = await userServices.getUserById(userId);
 
@@ -119,11 +123,7 @@ export const getUserComments = async (
     const totalUserComments = await userServices.getTotalUserComments(userId);
     const totalPages = Math.ceil(totalUserComments / limit);
 
-    const links = getPaginationLinks(req as unknown as Request, {
-      limit,
-      page,
-      totalPages
-    });
+    const links = getPaginationLinks(req as Request, { limit, page, totalPages });
 
     res.status(200).json({
       links,
@@ -141,8 +141,16 @@ export const getUserComments = async (
 // Get user's folders
 export const getUserFolders = async (req: GetUserFoldersRequest, res: GetUserFoldersResponse) => {
   try {
-    const { limit, page, pageIndex, orderBy } = req.query;
+    const { limit = 10, page = 1, pageIndex = 0, orderBy = { createdAt: 'asc' } } = req.query;
     const { userId } = req.params;
+
+    if (!userId) {
+      throw new HttpResponseError({
+        description: 'userId is required. Please check your params',
+        message: 'userId is required',
+        status: 'FORBIDDEN'
+      });
+    }
 
     const user = await userServices.getUserById(userId);
 
@@ -170,7 +178,7 @@ export const getUserFolders = async (req: GetUserFoldersRequest, res: GetUserFol
     const totalUserFolders = await userServices.getTotalUserFolders(userId);
     const totalPages = Math.ceil(totalUserFolders / limit);
 
-    const links = getPaginationLinks(req as unknown as Request, { limit, page, totalPages });
+    const links = getPaginationLinks(req as Request, { limit, page, totalPages });
 
     res.status(200).json({
       links,
@@ -190,6 +198,14 @@ export const putUser = async (req: PutUserRequest, res: PutUserResponse) => {
   try {
     const { userId } = req.params;
     const { email, login, bio, username, role } = req.body;
+
+    if (!userId) {
+      throw new HttpResponseError({
+        description: 'userId is required. Please check your params',
+        message: 'userId is required',
+        status: 'FORBIDDEN'
+      });
+    }
 
     const user = await userServices.getUserById(userId);
 
@@ -223,6 +239,14 @@ export const putUser = async (req: PutUserRequest, res: PutUserResponse) => {
 export const deleteUser = async (req: DeleteUserRequest, res: DeleteUserResponse) => {
   try {
     const { userId } = req.params;
+
+    if (!userId) {
+      throw new HttpResponseError({
+        description: 'userId is required. Please check your params',
+        message: 'userId is required',
+        status: 'FORBIDDEN'
+      });
+    }
 
     const user = await userServices.getUserById(userId);
 

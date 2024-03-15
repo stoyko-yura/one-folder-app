@@ -4,25 +4,16 @@ import { HttpResponseError, errorHandler } from '@/utils';
 
 export const pagination = (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { page, limit } = req.query;
+    const { page } = req.query;
 
     const parsedPage = Number(page) || 1;
-    const parsedLimit = Number(limit) || 10;
 
-    const pageIndex = parsedPage - 1;
-
-    if (parsedPage < 0) {
+    if (parsedPage <= 0) {
       throw new HttpResponseError({
         message: 'Invalid page',
         status: 'INTERNAL_SERVER_ERROR'
       });
     }
-
-    req.query = {
-      limit: parsedLimit.toString(),
-      page: parsedPage.toString(),
-      pageIndex: pageIndex.toString()
-    };
 
     next();
   } catch (error) {

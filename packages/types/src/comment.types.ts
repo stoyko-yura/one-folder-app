@@ -11,7 +11,7 @@ export interface CommentData extends Comment {}
 
 // Get comment
 export interface GetCommentRequestParams {
-  commentId: string;
+  commentId?: string;
 }
 
 export interface GetCommentResponseBody extends BaseResponseBody {
@@ -22,7 +22,7 @@ export interface GetCommentResponseBody extends BaseResponseBody {
 export interface GetCommentsPaginationParams extends CommentPaginationOptions {}
 
 export interface GetCommentsRequestQueries extends CommentPaginationOptions {
-  page: number;
+  page?: number;
 }
 
 export interface GetCommentsResponseBody extends BaseResponseBody {
@@ -34,13 +34,13 @@ export interface GetCommentsResponseBody extends BaseResponseBody {
 
 // Get comment's ratings
 export interface GetCommentRatingsRequestParams {
-  commentId: string;
+  commentId?: string;
 }
 
 export interface GetCommentRatingsPaginationParams extends CommentRatingsPaginationOptions {}
 
 export interface GetCommentRatingsRequestQueries extends CommentRatingsPaginationOptions {
-  page: number;
+  page?: number;
 }
 
 export interface GetCommentRatingsResponseBody extends BaseResponseBody {
@@ -63,7 +63,7 @@ export interface PostCommentResponseBody extends BaseResponseBody {
 
 // Put comment
 export interface PutCommentRequestParams {
-  commentId: string;
+  commentId?: string;
 }
 
 export interface PutCommentRequestBody {
@@ -76,7 +76,7 @@ export interface PutCommentResponseBody extends BaseResponseBody {
 
 // Delete comment
 export interface DeleteCommentRequestParams {
-  commentId: string;
+  commentId?: string;
 }
 
 export interface DeleteCommentResponseBody extends BaseResponseBody {}

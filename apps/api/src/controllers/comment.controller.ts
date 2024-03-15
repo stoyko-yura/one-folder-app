@@ -21,7 +21,7 @@ import { HttpResponseError, errorHandler } from '@/utils';
 // Get comments
 export const getComments = async (req: GetCommentsRequest, res: GetCommentsResponse) => {
   try {
-    const { limit, page, pageIndex, orderBy } = req.query;
+    const { limit = 10, page = 1, pageIndex = 0, orderBy = { createdAt: 'asc' } } = req.query;
 
     const comments = await commentServices.getCommentsWithPagination({
       limit,
@@ -39,11 +39,7 @@ export const getComments = async (req: GetCommentsRequest, res: GetCommentsRespo
     const totalComments = await commentServices.getTotalComments();
     const totalPages = Math.ceil(totalComments / limit);
 
-    const links = getPaginationLinks(req as unknown as Request, {
-      limit,
-      page,
-      totalPages
-    });
+    const links = getPaginationLinks(req as Request, { limit, page, totalPages });
 
     res.status(200).json({
       comments,
@@ -62,6 +58,14 @@ export const getComments = async (req: GetCommentsRequest, res: GetCommentsRespo
 export const getComment = async (req: GetCommentRequest, res: GetCommentResponse) => {
   try {
     const { commentId } = req.params;
+
+    if (!commentId) {
+      throw new HttpResponseError({
+        description: 'commentId is required. Please check your params',
+        message: 'commentId is required',
+        status: 'FORBIDDEN'
+      });
+    }
 
     const comment = await commentServices.getCommentById(commentId);
 
@@ -89,8 +93,16 @@ export const getCommentRatings = async (
   res: GetCommentRatingsResponse
 ) => {
   try {
-    const { limit, page, pageIndex, orderBy } = req.query;
+    const { limit = 10, page = 1, pageIndex = 0, orderBy = { createdAt: 'asc' } } = req.query;
     const { commentId } = req.params;
+
+    if (!commentId) {
+      throw new HttpResponseError({
+        description: 'commentId is required. Please check your params',
+        message: 'commentId is required',
+        status: 'FORBIDDEN'
+      });
+    }
 
     const comment = await commentServices.getCommentById(commentId);
 
@@ -118,11 +130,7 @@ export const getCommentRatings = async (
     const totalCommentRatings = await commentServices.getTotalCommentRatings(commentId);
     const totalPages = Math.ceil(totalCommentRatings / limit);
 
-    const links = getPaginationLinks(req as unknown as Request, {
-      limit,
-      page,
-      totalPages
-    });
+    const links = getPaginationLinks(req as Request, { limit, page, totalPages });
 
     res.status(200).json({
       commentRatings,
@@ -194,6 +202,14 @@ export const putComment = async (req: PutCommentRequest, res: PutCommentResponse
     const { commentId } = req.params;
     const { message } = req.body;
 
+    if (!commentId) {
+      throw new HttpResponseError({
+        description: 'commentId is required. Please check your params',
+        message: 'commentId is required',
+        status: 'FORBIDDEN'
+      });
+    }
+
     const comment = await commentServices.getCommentById(commentId);
 
     if (!comment) {
@@ -222,6 +238,14 @@ export const putComment = async (req: PutCommentRequest, res: PutCommentResponse
 export const deleteComment = async (req: DeleteCommentRequest, res: DeleteCommentResponse) => {
   try {
     const { commentId } = req.params;
+
+    if (!commentId) {
+      throw new HttpResponseError({
+        description: 'commentId is required. Please check your params',
+        message: 'commentId is required',
+        status: 'FORBIDDEN'
+      });
+    }
 
     const comment = await commentServices.getCommentById(commentId);
 

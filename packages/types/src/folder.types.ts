@@ -27,7 +27,7 @@ export interface FolderData extends Folder {
 
 // Get folder
 export interface GetFolderRequestParams {
-  folderId: string;
+  folderId?: string;
 }
 
 export interface GetFolderResponseBody extends BaseResponseBody {
@@ -38,7 +38,7 @@ export interface GetFolderResponseBody extends BaseResponseBody {
 export interface GetFoldersPaginationParams extends FolderPaginationOptions {}
 
 export interface GetFoldersRequestQueries extends FolderPaginationOptions {
-  page: number;
+  page?: number;
 }
 
 export interface GetFoldersResponseBody extends BaseResponseBody {
@@ -50,13 +50,13 @@ export interface GetFoldersResponseBody extends BaseResponseBody {
 
 // Get folder's comments
 export interface GetFolderCommentsRequestParams {
-  folderId: string;
+  folderId?: string;
 }
 
 export interface GetFolderCommentsPaginationParams extends FolderCommentsPaginationOptions {}
 
 export interface GetFolderCommentsRequestQueries extends FolderCommentsPaginationOptions {
-  page: number;
+  page?: number;
 }
 
 export interface GetFolderCommentsResponseBody extends BaseResponseBody {
@@ -68,13 +68,13 @@ export interface GetFolderCommentsResponseBody extends BaseResponseBody {
 
 // Get folder's ratings
 export interface GetFolderRatingsRequestParams {
-  folderId: string;
+  folderId?: string;
 }
 
 export interface GetFolderRatingsPaginationParams extends FolderRatingsPaginationOptions {}
 
 export interface GetFolderRatingsRequestQueries extends FolderRatingsPaginationOptions {
-  page: number;
+  page?: number;
 }
 
 export interface GetFolderRatingsResponseBody extends BaseResponseBody {
@@ -87,13 +87,13 @@ export interface GetFolderRatingsResponseBody extends BaseResponseBody {
 
 // Get folder's software
 export interface GetFolderSoftwareRequestParams {
-  folderId: string;
+  folderId?: string;
 }
 
 export interface GetFolderSoftwarePaginationParams extends FolderSoftwarePaginationOptions {}
 
 export interface GetFolderSoftwareRequestQueries extends FolderSoftwarePaginationOptions {
-  page: number;
+  page?: number;
 }
 
 export interface GetFolderSoftwareResponseBody extends BaseResponseBody {
@@ -118,7 +118,7 @@ export interface PostFolderResponseBody extends BaseResponseBody {
 
 // Put folder
 export interface PutFolderRequestParams {
-  folderId: string;
+  folderId?: string;
 }
 
 export interface PutFolderRequestBody {
@@ -134,7 +134,7 @@ export interface PutFolderResponseBody extends BaseResponseBody {
 
 // Delete folder
 export interface DeleteFolderRequestParams {
-  folderId: string;
+  folderId?: string;
 }
 
 export interface DeleteFolderResponseBody extends BaseResponseBody {}

@@ -26,7 +26,7 @@ import { HttpResponseError, errorHandler, excludeFields } from '@/utils';
 // Get folders
 export const getFolders = async (req: GetFoldersRequest, res: GetFoldersResponse) => {
   try {
-    const { limit, page, pageIndex, orderBy } = req.query;
+    const { limit = 10, page = 1, pageIndex = 0, orderBy = { createdAt: 'asc' } } = req.query;
 
     const folders = await folderServices.getFoldersWithPagination({
       limit,
@@ -44,7 +44,7 @@ export const getFolders = async (req: GetFoldersRequest, res: GetFoldersResponse
     const totalFolders = await folderServices.getTotalFolders();
     const totalPages = Math.ceil(totalFolders / limit);
 
-    const links = getPaginationLinks(req as unknown as Request, { limit, page, totalPages });
+    const links = getPaginationLinks(req as Request, { limit, page, totalPages });
 
     res.status(200).json({
       folders: folders as FolderData[],
@@ -63,6 +63,14 @@ export const getFolders = async (req: GetFoldersRequest, res: GetFoldersResponse
 export const getFolder = async (req: GetFolderRequest, res: GetFolderResponse) => {
   try {
     const { folderId } = req.params;
+
+    if (!folderId) {
+      throw new HttpResponseError({
+        description: 'folderId is required. Please check your params',
+        message: 'folderId is required',
+        status: 'FORBIDDEN'
+      });
+    }
 
     const folder = await folderServices.getFolderById(folderId);
 
@@ -90,8 +98,16 @@ export const getFolderComments = async (
   res: GetFolderCommentsResponse
 ) => {
   try {
-    const { limit, page, pageIndex, orderBy } = req.query;
+    const { limit = 10, page = 1, pageIndex = 0, orderBy = { createdAt: 'asc' } } = req.query;
     const { folderId } = req.params;
+
+    if (!folderId) {
+      throw new HttpResponseError({
+        description: 'folderId is required. Please check your params',
+        message: 'folderId is required',
+        status: 'FORBIDDEN'
+      });
+    }
 
     const folder = await folderServices.getFolderById(folderId);
 
@@ -119,7 +135,7 @@ export const getFolderComments = async (
     const totalFolderComments = await folderServices.getTotalFolderComments(folderId);
     const totalPages = Math.ceil(totalFolderComments / limit);
 
-    const links = getPaginationLinks(req as unknown as Request, { limit, page, totalPages });
+    const links = getPaginationLinks(req as Request, { limit, page, totalPages });
 
     res.status(200).json({
       folderComments,
@@ -140,8 +156,16 @@ export const getFolderRatings = async (
   res: GetFolderRatingsResponse
 ) => {
   try {
-    const { limit, page, pageIndex, orderBy } = req.query;
+    const { limit = 10, page = 1, pageIndex = 0, orderBy = { createdAt: 'asc' } } = req.query;
     const { folderId } = req.params;
+
+    if (!folderId) {
+      throw new HttpResponseError({
+        description: 'folderId is required. Please check your params',
+        message: 'folderId is required',
+        status: 'FORBIDDEN'
+      });
+    }
 
     const folder = await folderServices.getFolderById(folderId);
 
@@ -169,11 +193,7 @@ export const getFolderRatings = async (
     const totalFolderRatings = await folderServices.getTotalFolderRatings(folderId);
     const totalPages = Math.ceil(totalFolderRatings / limit);
 
-    const links = getPaginationLinks(req as unknown as Request, {
-      limit,
-      page,
-      totalPages
-    });
+    const links = getPaginationLinks(req as Request, { limit, page, totalPages });
 
     const averageRating = await folderServices.getAverageFolderRating(folderId);
 
@@ -197,8 +217,16 @@ export const getFolderSoftware = async (
   res: GetFolderSoftwareResponse
 ) => {
   try {
-    const { limit, page, pageIndex, orderBy } = req.query;
+    const { limit = 10, page = 1, pageIndex = 0, orderBy = { name: 'asc' } } = req.query;
     const { folderId } = req.params;
+
+    if (!folderId) {
+      throw new HttpResponseError({
+        description: 'folderId is required. Please check your params',
+        message: 'folderId is required',
+        status: 'FORBIDDEN'
+      });
+    }
 
     const folder = await folderServices.getFolderById(folderId);
 
@@ -226,7 +254,7 @@ export const getFolderSoftware = async (
     const totalFolderSoftware = await folderServices.getTotalFolderSoftware(folderId);
     const totalPages = Math.ceil(totalFolderSoftware / limit);
 
-    const links = getPaginationLinks(req as unknown as Request, { limit, page, totalPages });
+    const links = getPaginationLinks(req as Request, { limit, page, totalPages });
 
     res.status(200).json({
       folderSoftware,
@@ -280,6 +308,14 @@ export const putFolder = async (req: PutFolderRequest, res: PutFolderResponse) =
     const { folderId } = req.params;
     const { access, description, image, title } = req.body;
 
+    if (!folderId) {
+      throw new HttpResponseError({
+        description: 'folderId is required. Please check your params',
+        message: 'folderId is required',
+        status: 'FORBIDDEN'
+      });
+    }
+
     const folder = await folderServices.getFolderById(folderId);
 
     if (!folder) {
@@ -311,6 +347,14 @@ export const putFolder = async (req: PutFolderRequest, res: PutFolderResponse) =
 export const deleteFolder = async (req: DeleteFolderRequest, res: DeleteFolderResponse) => {
   try {
     const { folderId } = req.params;
+
+    if (!folderId) {
+      throw new HttpResponseError({
+        description: 'folderId is required. Please check your params',
+        message: 'folderId is required',
+        status: 'FORBIDDEN'
+      });
+    }
 
     const folder = folderServices.getFolderById(folderId);
 

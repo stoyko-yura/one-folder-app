@@ -11,7 +11,7 @@ export interface RatingData extends Rating {
 
 // Get rating
 export interface GetRatingRequestParams {
-  ratingId: string;
+  ratingId?: string;
 }
 
 export interface GetRatingResponseBody extends BaseResponseBody {
@@ -22,7 +22,7 @@ export interface GetRatingResponseBody extends BaseResponseBody {
 export interface GetRatingsPaginationParams extends RatingPaginationOptions {}
 
 export interface GetRatingsRequestQueries extends RatingPaginationOptions {
-  page: number;
+  page?: number;
 }
 
 export interface GetRatingsResponseBody extends BaseResponseBody {
@@ -50,7 +50,7 @@ export interface PostRatingResponseBody extends BaseResponseBody {
 
 // Put rating
 export interface PutRatingRequestParams {
-  ratingId: string;
+  ratingId?: string;
 }
 
 export interface PutRatingRequestBody {
@@ -67,7 +67,7 @@ export interface PutRatingResponseBody extends BaseResponseBody {
 
 // Delete rating
 export interface DeleteRatingRequestParams {
-  ratingId: string;
+  ratingId?: string;
 }
 
 export interface DeleteRatingResponseBody extends BaseResponseBody {}

@@ -20,7 +20,7 @@ import { HttpResponseError, capitalize, errorHandler } from '@/utils';
 // Get ratings
 export const getRatings = async (req: GetRatingsRequest, res: GetRatingsResponse) => {
   try {
-    const { limit, page, pageIndex, orderBy } = req.query;
+    const { limit = 10, page = 1, pageIndex = 0, orderBy = { createdAt: 'asc' } } = req.query;
 
     const ratings = await ratingServices.getRatingsWithPagination({
       limit,
@@ -38,7 +38,7 @@ export const getRatings = async (req: GetRatingsRequest, res: GetRatingsResponse
     const totalRatings = await ratingServices.getTotalRatings();
     const totalPages = Math.ceil(totalRatings / limit);
 
-    const links = getPaginationLinks(req as unknown as Request, { limit, page, totalPages });
+    const links = getPaginationLinks(req as Request, { limit, page, totalPages });
 
     res.status(200).json({
       links,
@@ -57,6 +57,14 @@ export const getRatings = async (req: GetRatingsRequest, res: GetRatingsResponse
 export const getRating = async (req: GetRatingRequest, res: GetRatingResponse) => {
   try {
     const { ratingId } = req.params;
+
+    if (!ratingId) {
+      throw new HttpResponseError({
+        description: 'ratingId is required. Please check your params',
+        message: 'ratingId is required',
+        status: 'FORBIDDEN'
+      });
+    }
 
     const rating = await ratingServices.getRatingById(ratingId);
 
@@ -170,6 +178,14 @@ export const putRating = async (req: PutRatingRequest, res: PutRatingResponse) =
     const { ratingId } = req.params;
     const { rating, userId } = req.body;
 
+    if (!ratingId) {
+      throw new HttpResponseError({
+        description: 'ratingId is required. Please check your params',
+        message: 'ratingId is required',
+        status: 'FORBIDDEN'
+      });
+    }
+
     if (!userId) {
       throw new HttpResponseError({
         description: "userId can't be nullable",
@@ -257,6 +273,14 @@ export const putRating = async (req: PutRatingRequest, res: PutRatingResponse) =
 export const deleteRating = async (req: DeleteRatingRequest, res: DeleteRatingResponse) => {
   try {
     const { ratingId } = req.params;
+
+    if (!ratingId) {
+      throw new HttpResponseError({
+        description: 'ratingId is required. Please check your params',
+        message: 'ratingId is required',
+        status: 'FORBIDDEN'
+      });
+    }
 
     const rating = await ratingServices.getRatingById(ratingId);
 

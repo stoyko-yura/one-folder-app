@@ -11,7 +11,7 @@ export interface CategoryData extends Category {}
 
 // Get category
 export interface GetCategoryRequestParams {
-  categoryId: string;
+  categoryId?: string;
 }
 
 export interface GetCategoryResponseBody extends BaseResponseBody {
@@ -22,7 +22,7 @@ export interface GetCategoryResponseBody extends BaseResponseBody {
 export interface GetCategoriesPaginationParams extends CategoryPaginationOptions {}
 
 export interface GetCategoriesRequestQueries extends CategoryPaginationOptions {
-  page: number;
+  page?: number;
 }
 
 export interface GetCategoriesResponseBody extends BaseResponseBody {
@@ -34,13 +34,13 @@ export interface GetCategoriesResponseBody extends BaseResponseBody {
 
 // Get cateory's softwares
 export interface GetCategorySoftwareRequestParams {
-  categoryId: string;
+  categoryId?: string;
 }
 
 export interface GetCategorySoftwarePaginationParams extends CategorySoftwarePaginationOptions {}
 
 export interface GetCategorySoftwareRequestQueries extends CategorySoftwarePaginationOptions {
-  page: number;
+  page?: number;
 }
 
 export interface GetCategorySoftwareResponseBody extends BaseResponseBody {
@@ -61,7 +61,7 @@ export interface PostCategoryResponseBody extends BaseResponseBody {
 
 // Put category
 export interface PutCategoryRequestParams {
-  categoryId: string;
+  categoryId?: string;
 }
 
 export interface PutCategoryRequestBody {
@@ -74,7 +74,7 @@ export interface PutCategoryResponseBody extends BaseResponseBody {
 
 // Delete category
 export interface DeleteCategoryRequestParams {
-  categoryId: string;
+  categoryId?: string;
 }
 
 export interface DeleteCategoryResponseBody extends BaseResponseBody {}

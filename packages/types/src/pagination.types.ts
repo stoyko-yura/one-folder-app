@@ -1,8 +1,8 @@
 import type { Prisma } from '@one-folder-app/database';
 
 export interface PaginationOptions<T> {
-  limit: number;
-  pageIndex: number;
+  limit?: number;
+  pageIndex?: number;
   orderBy?: T;
 }
 

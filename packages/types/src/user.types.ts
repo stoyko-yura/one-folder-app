@@ -29,7 +29,7 @@ export interface GetUserResponseBody extends BaseResponseBody {
 export interface GetUsersPaginationParams extends UserPaginationOptions {}
 
 export interface GetUsersRequestQueries extends UserPaginationOptions {
-  page: number;
+  page?: number;
 }
 
 export interface GetUsersResponseBody extends BaseResponseBody {
@@ -41,13 +41,13 @@ export interface GetUsersResponseBody extends BaseResponseBody {
 
 // Get user's folders
 export interface GetUserFoldersRequestParams {
-  userId: string;
+  userId?: string;
 }
 
 export interface GetUserFoldersPaginationParams extends UserFoldersPaginationOptions {}
 
 export interface GetUserFoldersRequestQueries extends UserFoldersPaginationOptions {
-  page: number;
+  page?: number;
 }
 
 export interface GetUserFoldersResponseBody extends BaseResponseBody {
@@ -59,13 +59,13 @@ export interface GetUserFoldersResponseBody extends BaseResponseBody {
 
 // Get user's comments
 export interface GetUserCommentsRequestParams {
-  userId: string;
+  userId?: string;
 }
 
 export interface GetUserCommentsPaginationParams extends UserFoldersPaginationOptions {}
 
 export interface GetUserCommentsRequestQueries extends UserFoldersPaginationOptions {
-  page: number;
+  page?: number;
 }
 
 export interface GetUserCommentsResponseBody extends BaseResponseBody {
@@ -77,7 +77,7 @@ export interface GetUserCommentsResponseBody extends BaseResponseBody {
 
 // Put user
 export interface PutUserRequestParams {
-  userId: string;
+  userId?: string;
 }
 
 export interface PutUserRequestBody {
@@ -94,7 +94,7 @@ export interface PutUserResponseBody extends BaseResponseBody {
 
 // Delete user
 export interface DeleteUserRequestParams {
-  userId: string;
+  userId?: string;
 }
 
 export interface DeleteUserResponseBody extends BaseResponseBody {}

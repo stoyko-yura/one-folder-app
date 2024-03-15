@@ -21,7 +21,7 @@ import { HttpResponseError, errorHandler } from '@/utils';
 // Get categories
 export const getCategories = async (req: GetCategoriesRequest, res: GetCategoriesResponse) => {
   try {
-    const { limit, page, pageIndex, orderBy } = req.query;
+    const { limit = 10, page = 1, pageIndex = 0, orderBy = { name: 'asc' } } = req.query;
 
     const categories = await categoryServices.getCategoriesWithPagination({
       limit,
@@ -39,7 +39,7 @@ export const getCategories = async (req: GetCategoriesRequest, res: GetCategorie
     const totalCategories = await categoryServices.getTotalCategories();
     const totalPages = Math.ceil(totalCategories / limit);
 
-    const links = getPaginationLinks(req as unknown as Request, { limit, page, totalPages });
+    const links = getPaginationLinks(req as Request, { limit, page, totalPages });
 
     res.status(200).json({
       categories,
@@ -59,13 +59,21 @@ export const getCategory = async (req: GetCategoryRequest, res: GetCategoryRespo
   try {
     const { categoryId } = req.params;
 
+    if (!categoryId) {
+      throw new HttpResponseError({
+        description: 'categoryId is required. Please check your params',
+        message: 'categoryId is required',
+        status: 'FORBIDDEN'
+      });
+    }
+
     const category = await categoryServices.getCategoryById(categoryId);
 
     if (!category) {
       throw new HttpResponseError({
         description: `Category ${categoryId} not found`,
         message: 'Category not found',
-        status: 'NOT_FOUND'
+        status: 'BAD_REQUEST'
       });
     }
 
@@ -85,8 +93,16 @@ export const getCategorySoftwares = async (
   res: GetCategorySoftwareResponse
 ) => {
   try {
-    const { limit, page, pageIndex, orderBy } = req.query;
+    const { limit = 10, page = 1, pageIndex = 0, orderBy = { name: 'asc' } } = req.query;
     const { categoryId } = req.params;
+
+    if (!categoryId) {
+      throw new HttpResponseError({
+        description: 'categoryId is required. Please check your params',
+        message: 'categoryId is required',
+        status: 'FORBIDDEN'
+      });
+    }
 
     const category = await categoryServices.getCategoryById(categoryId);
 
@@ -114,7 +130,7 @@ export const getCategorySoftwares = async (
     const totalCategorySoftware = await categoryServices.getTotalCategorySoftwares(categoryId);
     const totalPages = Math.ceil(totalCategorySoftware / limit);
 
-    const links = getPaginationLinks(req as unknown as Request, { limit, page, totalPages });
+    const links = getPaginationLinks(req as Request, { limit, page, totalPages });
 
     res.status(200).json({
       categorySoftware,
@@ -161,8 +177,16 @@ export const postCategory = async (req: PostCategoryRequest, res: PostCategoryRe
 // Put category
 export const putCategory = async (req: PutCategoryRequest, res: PutCategoryResponse) => {
   try {
-    const { name } = req.body;
     const { categoryId } = req.params;
+    const { name } = req.body;
+
+    if (!categoryId) {
+      throw new HttpResponseError({
+        description: 'categoryId is required. Please check your params',
+        message: 'categoryId is required',
+        status: 'FORBIDDEN'
+      });
+    }
 
     let category = await categoryServices.getCategoryById(categoryId);
 
@@ -202,6 +226,14 @@ export const putCategory = async (req: PutCategoryRequest, res: PutCategoryRespo
 export const deleteCategory = async (req: DeleteCategoryRequest, res: DeleteCategoryResponse) => {
   try {
     const { categoryId } = req.params;
+
+    if (!categoryId) {
+      throw new HttpResponseError({
+        description: 'categoryId is required. Please check your params',
+        message: 'categoryId is required',
+        status: 'FORBIDDEN'
+      });
+    }
 
     const category = await categoryServices.getCategoryById(categoryId);
 
