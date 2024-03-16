@@ -1,20 +1,37 @@
+import type { FolderData } from '@one-folder-app/types';
 import type { Request, Response } from 'express';
 
 import { getPaginationLinks } from '@/middleware';
 import { folderServices, userServices } from '@/services';
+import type {
+  DeleteFolderRequest,
+  DeleteFolderResponse,
+  GetFolderCommentsRequest,
+  GetFolderCommentsResponse,
+  GetFolderRatingsRequest,
+  GetFolderRatingsResponse,
+  GetFolderRequest,
+  GetFolderResponse,
+  GetFolderSoftwareRequest,
+  GetFolderSoftwareResponse,
+  GetFoldersRequest,
+  GetFoldersResponse,
+  PostFolderRequest,
+  PostFolderResponse,
+  PutFolderRequest,
+  PutFolderResponse
+} from '@/types';
 import { HttpResponseError, errorHandler, excludeFields } from '@/utils';
 
 // Get folders
-export const getFolders = async (req: Request, res: Response) => {
+export const getFolders = async (req: GetFoldersRequest, res: GetFoldersResponse) => {
   try {
-    const { page, limit, pageIndex } = req.query;
+    const { limit = 10, page = 1, pageIndex = 0, orderBy = { createdAt: 'asc' } } = req.query;
 
-    const folders = await folderServices.findFoldersWithPagination({
-      limit: Number(limit),
-      orderBy: {
-        createdAt: 'asc'
-      },
-      pageIndex: Number(pageIndex)
+    const folders = await folderServices.getFoldersWithPagination({
+      limit,
+      orderBy,
+      pageIndex
     });
 
     if (!folders) {
@@ -25,12 +42,12 @@ export const getFolders = async (req: Request, res: Response) => {
     }
 
     const totalFolders = await folderServices.getTotalFolders();
-    const totalPages = Math.ceil(totalFolders / Number(limit));
+    const totalPages = Math.ceil(totalFolders / limit);
 
-    const links = getPaginationLinks(req, { limit: Number(limit), page: Number(page), totalPages });
+    const links = getPaginationLinks(req as Request, { limit, page, totalPages });
 
     res.status(200).json({
-      folders,
+      folders: folders as FolderData[],
       links,
       message: 'Folders loaded',
       success: true,
@@ -38,16 +55,24 @@ export const getFolders = async (req: Request, res: Response) => {
       totalPages
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
 // Get folder
-export const getFolder = async (req: Request, res: Response) => {
+export const getFolder = async (req: GetFolderRequest, res: GetFolderResponse) => {
   try {
     const { folderId } = req.params;
 
-    const folder = await folderServices.findFolderById(folderId);
+    if (!folderId) {
+      throw new HttpResponseError({
+        description: 'folderId is required. Please check your params',
+        message: 'folderId is required',
+        status: 'FORBIDDEN'
+      });
+    }
+
+    const folder = await folderServices.getFolderById(folderId);
 
     if (!folder) {
       throw new HttpResponseError({
@@ -58,22 +83,33 @@ export const getFolder = async (req: Request, res: Response) => {
     }
 
     res.status(200).json({
-      folder: excludeFields(folder, ['author.hash']),
+      folder: excludeFields(folder, ['author.hash']) as FolderData,
       message: 'Folder loaded',
       success: true
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
 // Get folder's comments
-export const getFolderComments = async (req: Request, res: Response) => {
+export const getFolderComments = async (
+  req: GetFolderCommentsRequest,
+  res: GetFolderCommentsResponse
+) => {
   try {
-    const { page, limit, pageIndex } = req.query;
+    const { limit = 10, page = 1, pageIndex = 0, orderBy = { createdAt: 'asc' } } = req.query;
     const { folderId } = req.params;
 
-    const folder = await folderServices.findFolderById(folderId);
+    if (!folderId) {
+      throw new HttpResponseError({
+        description: 'folderId is required. Please check your params',
+        message: 'folderId is required',
+        status: 'FORBIDDEN'
+      });
+    }
+
+    const folder = await folderServices.getFolderById(folderId);
 
     if (!folder) {
       throw new HttpResponseError({
@@ -83,12 +119,10 @@ export const getFolderComments = async (req: Request, res: Response) => {
       });
     }
 
-    const folderComments = await folderServices.findFolderCommentsWithPaginations(folderId, {
-      limit: Number(limit),
-      orderBy: {
-        createdAt: 'asc'
-      },
-      pageIndex: Number(pageIndex)
+    const folderComments = await folderServices.getFolderCommentsWithPaginations(folderId, {
+      limit,
+      orderBy,
+      pageIndex
     });
 
     if (!folderComments) {
@@ -99,9 +133,9 @@ export const getFolderComments = async (req: Request, res: Response) => {
     }
 
     const totalFolderComments = await folderServices.getTotalFolderComments(folderId);
-    const totalPages = Math.ceil(totalFolderComments / Number(limit));
+    const totalPages = Math.ceil(totalFolderComments / limit);
 
-    const links = getPaginationLinks(req, { limit: Number(limit), page: Number(page), totalPages });
+    const links = getPaginationLinks(req as Request, { limit, page, totalPages });
 
     res.status(200).json({
       folderComments,
@@ -112,17 +146,28 @@ export const getFolderComments = async (req: Request, res: Response) => {
       totalPages
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
 // Get folder's ratings
-export const getFolderRatings = async (req: Request, res: Response) => {
+export const getFolderRatings = async (
+  req: GetFolderRatingsRequest,
+  res: GetFolderRatingsResponse
+) => {
   try {
-    const { page, limit, pageIndex } = req.query;
+    const { limit = 10, page = 1, pageIndex = 0, orderBy = { createdAt: 'asc' } } = req.query;
     const { folderId } = req.params;
 
-    const folder = await folderServices.findFolderById(folderId);
+    if (!folderId) {
+      throw new HttpResponseError({
+        description: 'folderId is required. Please check your params',
+        message: 'folderId is required',
+        status: 'FORBIDDEN'
+      });
+    }
+
+    const folder = await folderServices.getFolderById(folderId);
 
     if (!folder) {
       throw new HttpResponseError({
@@ -132,12 +177,10 @@ export const getFolderRatings = async (req: Request, res: Response) => {
       });
     }
 
-    const folderRatings = await folderServices.findFolderRatingsWithPagination(folderId, {
-      limit: Number(limit),
-      orderBy: {
-        createdAt: 'asc'
-      },
-      pageIndex: Number(pageIndex)
+    const folderRatings = await folderServices.getFolderRatingsWithPagination(folderId, {
+      limit,
+      orderBy,
+      pageIndex
     });
 
     if (!folderRatings) {
@@ -148,9 +191,9 @@ export const getFolderRatings = async (req: Request, res: Response) => {
     }
 
     const totalFolderRatings = await folderServices.getTotalFolderRatings(folderId);
-    const totalPages = Math.ceil(totalFolderRatings / Number(limit));
+    const totalPages = Math.ceil(totalFolderRatings / limit);
 
-    const links = getPaginationLinks(req, { limit: Number(limit), page: Number(page), totalPages });
+    const links = getPaginationLinks(req as Request, { limit, page, totalPages });
 
     const averageRating = await folderServices.getAverageFolderRating(folderId);
 
@@ -164,17 +207,28 @@ export const getFolderRatings = async (req: Request, res: Response) => {
       totalPages
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
 // Get folder's software
-export const getFolderSoftware = async (req: Request, res: Response) => {
+export const getFolderSoftware = async (
+  req: GetFolderSoftwareRequest,
+  res: GetFolderSoftwareResponse
+) => {
   try {
-    const { page, limit, pageIndex } = req.query;
+    const { limit = 10, page = 1, pageIndex = 0, orderBy = { name: 'asc' } } = req.query;
     const { folderId } = req.params;
 
-    const folder = await folderServices.findFolderById(folderId);
+    if (!folderId) {
+      throw new HttpResponseError({
+        description: 'folderId is required. Please check your params',
+        message: 'folderId is required',
+        status: 'FORBIDDEN'
+      });
+    }
+
+    const folder = await folderServices.getFolderById(folderId);
 
     if (!folder) {
       throw new HttpResponseError({
@@ -184,12 +238,10 @@ export const getFolderSoftware = async (req: Request, res: Response) => {
       });
     }
 
-    const folderSoftware = await folderServices.findFolderSoftwareWithPagination(folderId, {
-      limit: Number(limit),
-      orderBy: {
-        createdAt: 'asc'
-      },
-      pageIndex: Number(pageIndex)
+    const folderSoftware = await folderServices.getFolderSoftwareWithPagination(folderId, {
+      limit,
+      orderBy,
+      pageIndex
     });
 
     if (!folderSoftware) {
@@ -200,9 +252,9 @@ export const getFolderSoftware = async (req: Request, res: Response) => {
     }
 
     const totalFolderSoftware = await folderServices.getTotalFolderSoftware(folderId);
-    const totalPages = Math.ceil(totalFolderSoftware / Number(limit));
+    const totalPages = Math.ceil(totalFolderSoftware / limit);
 
-    const links = getPaginationLinks(req, { limit: Number(limit), page: Number(page), totalPages });
+    const links = getPaginationLinks(req as Request, { limit, page, totalPages });
 
     res.status(200).json({
       folderSoftware,
@@ -213,16 +265,16 @@ export const getFolderSoftware = async (req: Request, res: Response) => {
       totalPages
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
 // Post folder
-export const postFolder = async (req: Request, res: Response) => {
+export const postFolder = async (req: PostFolderRequest, res: PostFolderResponse) => {
   try {
-    const { image, title, description, access, authorId } = req.body;
+    const { authorId, title, access, description, image } = req.body;
 
-    const user = await userServices.findUserById(authorId);
+    const user = await userServices.getUserById(authorId);
 
     if (!user) {
       throw new HttpResponseError({
@@ -232,7 +284,7 @@ export const postFolder = async (req: Request, res: Response) => {
       });
     }
 
-    const createdFolder = await folderServices.createFolder({
+    const createdFolder = await folderServices.postFolder({
       access,
       authorId,
       description,
@@ -241,22 +293,30 @@ export const postFolder = async (req: Request, res: Response) => {
     });
 
     res.status(200).json({
-      folder: createdFolder,
+      folder: createdFolder as FolderData,
       message: 'Folder successfully created',
       success: true
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
 // Put folder
-export const putFolder = async (req: Request, res: Response) => {
+export const putFolder = async (req: PutFolderRequest, res: PutFolderResponse) => {
   try {
     const { folderId } = req.params;
-    const { image, title, description, access } = req.body;
+    const { access, description, image, title } = req.body;
 
-    const folder = await folderServices.findFolderById(folderId);
+    if (!folderId) {
+      throw new HttpResponseError({
+        description: 'folderId is required. Please check your params',
+        message: 'folderId is required',
+        status: 'FORBIDDEN'
+      });
+    }
+
+    const folder = await folderServices.getFolderById(folderId);
 
     if (!folder) {
       throw new HttpResponseError({
@@ -266,7 +326,7 @@ export const putFolder = async (req: Request, res: Response) => {
       });
     }
 
-    const editedFolder = await folderServices.updateFolder(folderId, {
+    const editedFolder = await folderServices.putFolder(folderId, {
       access,
       description,
       image,
@@ -274,21 +334,29 @@ export const putFolder = async (req: Request, res: Response) => {
     });
 
     res.status(200).json({
-      folder: editedFolder,
+      folder: editedFolder as FolderData,
       message: 'Folder edited',
       success: false
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
 // Delete folder
-export const deleteFolder = async (req: Request, res: Response) => {
+export const deleteFolder = async (req: DeleteFolderRequest, res: DeleteFolderResponse) => {
   try {
     const { folderId } = req.params;
 
-    const folder = folderServices.findFolderById(folderId);
+    if (!folderId) {
+      throw new HttpResponseError({
+        description: 'folderId is required. Please check your params',
+        message: 'folderId is required',
+        status: 'FORBIDDEN'
+      });
+    }
+
+    const folder = folderServices.getFolderById(folderId);
 
     if (!folder) {
       throw new HttpResponseError({
@@ -305,6 +373,6 @@ export const deleteFolder = async (req: Request, res: Response) => {
       success: true
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };

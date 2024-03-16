@@ -1,6 +1,5 @@
-import type { Response } from 'express';
-
-import { HttpStatusCode, type HttpResponseErrorArgs, type Statuses } from '@/types';
+import type { HttpErrorResponse, HttpResponseErrorArgs, Statuses } from '@/types';
+import { HttpStatusCode } from '@/types';
 
 export class HttpResponseError extends Error {
   public readonly status: Statuses;
@@ -22,12 +21,12 @@ export class HttpResponseError extends Error {
   }
 }
 
-export const errorHandler = (error: HttpResponseError, res: Response) => {
+export const errorHandler = (error: HttpResponseError, res: HttpErrorResponse) => {
   const code = HttpStatusCode[error.status];
 
-  console.log(
-    `[${error.status}]: ${error.message} ${error.description && `\n${error.description}`}`
-  );
+  const description = error.description ? `\n${error.description}` : '';
+
+  console.log(`[${error.status}]: ${error.message} ${description}`);
 
   res.status(code).json({
     message: error.message,

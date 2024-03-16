@@ -1,10 +1,11 @@
-import type { Request, Response } from 'express';
+import type { Response } from 'express';
 
 import { dbEnums } from '@/config';
+import type { GetRolesRequest, GetRolesResponse } from '@/types';
 import { errorHandler, type HttpResponseError } from '@/utils';
 
 // Get roles
-export const getRoles = (req: Request, res: Response) => {
+export const getRoles = (req: GetRolesRequest, res: GetRolesResponse) => {
   try {
     const { roles } = dbEnums;
 
@@ -14,6 +15,6 @@ export const getRoles = (req: Request, res: Response) => {
       success: true
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };

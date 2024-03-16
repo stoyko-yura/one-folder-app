@@ -1,0 +1,12 @@
+{
+  "extends": "@one-folder-app/tsconfig/node.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "baseUrl": "src",
+    "noImplicitAny": false,
+    "declaration": true
+  },
+  "include": ["src", ".eslintrc.cjs"],
+  "exclude": ["dist", "node_modules"]
+}

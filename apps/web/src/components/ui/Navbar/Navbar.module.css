@@ -5,7 +5,8 @@
   column-gap: 6px;
   flex-direction: row;
 
-  @media (max-width: $mantine-breakpoint-xs) {
+  @media (max-width: $mantine-breakpoint-md) {
+    padding: var(--mantine-spacing-md);
     width: 100%;
     flex-direction: column;
   }

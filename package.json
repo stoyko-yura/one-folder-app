@@ -5,8 +5,10 @@
     "build:api": "pnpm --filter='api' build",
     "build:web": "pnpm --filter='web' build",
     "build:database": "pnpm --filter='database' build",
+    "build:types": "pnpm --filter='types' build",
     "build": "pnpm '/^build:/'",
     "predev:database": "pnpm --filter='database' predev",
+    "predev:types": "pnpm --filter='types' predev",
     "predev": "pnpm '/^predev:/'",
     "dev:api": "pnpm --filter='api' dev",
     "dev:web": "pnpm --filter='web' dev",
@@ -20,8 +22,8 @@
   },
   "license": "ISC",
   "devDependencies": {
-    "@types/node": "^20.11.17",
-    "eslint": "^8.56.0",
+    "@types/node": "^20.11.20",
+    "eslint": "^8.57.0",
     "prettier": "^3.2.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"

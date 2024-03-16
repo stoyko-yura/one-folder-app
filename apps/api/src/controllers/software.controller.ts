@@ -1,20 +1,37 @@
+import type { SoftwareData } from '@one-folder-app/types';
 import type { Request, Response } from 'express';
 
 import { getPaginationLinks } from '@/middleware';
 import { softwareServices } from '@/services';
+import type {
+  DeleteSoftwareRequest,
+  DeleteSoftwareResponse,
+  GetSoftwareCategoriesRequest,
+  GetSoftwareCategoriesResponse,
+  GetSoftwareFoldersRequest,
+  GetSoftwareFoldersResponse,
+  GetSoftwareRatingsRequest,
+  GetSoftwareRatingsResponse,
+  GetSoftwareRequest,
+  GetSoftwareResponse,
+  GetSoftwaresRequest,
+  GetSoftwaresResponse,
+  PutSoftwareCategoriesRequest,
+  PutSoftwareCategoriesResponse,
+  PutSoftwareRequest,
+  PutSoftwareResponse
+} from '@/types';
 import { HttpResponseError, errorHandler } from '@/utils';
 
 // Get softwares
-export const getSoftwares = async (req: Request, res: Response) => {
+export const getSoftwares = async (req: GetSoftwaresRequest, res: GetSoftwaresResponse) => {
   try {
-    const { page, limit, pageIndex } = req.query;
+    const { limit = 10, page = 1, pageIndex = 0, orderBy = { name: 'asc' } } = req.query;
 
-    const software = await softwareServices.findSoftwareWithPagination({
-      limit: Number(limit),
-      orderBy: {
-        name: 'asc'
-      },
-      pageIndex: Number(pageIndex)
+    const software = await softwareServices.getSoftwareWithPagination({
+      limit,
+      orderBy,
+      pageIndex
     });
 
     if (!software) {
@@ -25,29 +42,37 @@ export const getSoftwares = async (req: Request, res: Response) => {
     }
 
     const totalSoftware = await softwareServices.getTotalSoftware();
-    const totalPages = Math.ceil(totalSoftware / Number(limit));
+    const totalPages = Math.ceil(totalSoftware / limit);
 
-    const links = getPaginationLinks(req, { limit: Number(limit), page: Number(page), totalPages });
+    const links = getPaginationLinks(req as Request, { limit, page, totalPages });
 
     res.status(200).json({
       links,
       message: 'Software loaded',
-      software,
+      software: software as SoftwareData[],
       success: true,
       totalPages,
       totalSoftware
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
 // Get software
-export const getSoftware = async (req: Request, res: Response) => {
+export const getSoftware = async (req: GetSoftwareRequest, res: GetSoftwareResponse) => {
   try {
     const { softwareId } = req.params;
 
-    const software = await softwareServices.findSoftwareById(softwareId);
+    if (!softwareId) {
+      throw new HttpResponseError({
+        description: 'softwareId is required. Please check your params',
+        message: 'softwareId is required',
+        status: 'FORBIDDEN'
+      });
+    }
+
+    const software = await softwareServices.getSoftwareById(softwareId);
 
     if (!software) {
       throw new HttpResponseError({
@@ -63,17 +88,28 @@ export const getSoftware = async (req: Request, res: Response) => {
       success: true
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
 // Get software's folders
-export const getSoftwareFolders = async (req: Request, res: Response) => {
+export const getSoftwareFolders = async (
+  req: GetSoftwareFoldersRequest,
+  res: GetSoftwareFoldersResponse
+) => {
   try {
-    const { page, limit, pageIndex } = req.query;
+    const { limit = 10, page = 1, pageIndex = 0, orderBy = { createdAt: 'asc' } } = req.query;
     const { softwareId } = req.params;
 
-    const software = await softwareServices.findSoftwareById(softwareId);
+    if (!softwareId) {
+      throw new HttpResponseError({
+        description: 'softwareId is required. Please check your params',
+        message: 'softwareId is required',
+        status: 'FORBIDDEN'
+      });
+    }
+
+    const software = await softwareServices.getSoftwareById(softwareId);
 
     if (!software) {
       throw new HttpResponseError({
@@ -83,12 +119,10 @@ export const getSoftwareFolders = async (req: Request, res: Response) => {
       });
     }
 
-    const softwareFolders = await softwareServices.findSoftwareFoldersWithPagination(softwareId, {
-      limit: Number(limit),
-      orderBy: {
-        title: 'asc'
-      },
-      pageIndex: Number(pageIndex)
+    const softwareFolders = await softwareServices.getSoftwareFoldersWithPagination(softwareId, {
+      limit,
+      orderBy,
+      pageIndex
     });
 
     if (!softwareFolders) {
@@ -99,9 +133,9 @@ export const getSoftwareFolders = async (req: Request, res: Response) => {
     }
 
     const totalSoftwareFolders = await softwareServices.getTotalSoftwareFolders(softwareId);
-    const totalPages = Math.ceil(totalSoftwareFolders / Number(limit));
+    const totalPages = Math.ceil(totalSoftwareFolders / limit);
 
-    const links = getPaginationLinks(req, { limit: Number(limit), page: Number(page), totalPages });
+    const links = getPaginationLinks(req as Request, { limit, page, totalPages });
 
     res.status(200).json({
       links,
@@ -112,17 +146,28 @@ export const getSoftwareFolders = async (req: Request, res: Response) => {
       totalSoftwareFolders
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
 // Get software's ratings
-export const getSoftwareRatings = async (req: Request, res: Response) => {
+export const getSoftwareRatings = async (
+  req: GetSoftwareRatingsRequest,
+  res: GetSoftwareRatingsResponse
+) => {
   try {
-    const { page, limit, pageIndex } = req.query;
+    const { limit = 10, page = 1, pageIndex = 0, orderBy = { createdAt: 'asc' } } = req.query;
     const { softwareId } = req.params;
 
-    const software = await softwareServices.findSoftwareById(softwareId);
+    if (!softwareId) {
+      throw new HttpResponseError({
+        description: 'softwareId is required. Please check your params',
+        message: 'softwareId is required',
+        status: 'FORBIDDEN'
+      });
+    }
+
+    const software = await softwareServices.getSoftwareById(softwareId);
 
     if (!software) {
       throw new HttpResponseError({
@@ -132,12 +177,10 @@ export const getSoftwareRatings = async (req: Request, res: Response) => {
       });
     }
 
-    const softwareRatings = await softwareServices.findSoftwareRatingsWithPagination(softwareId, {
-      limit: Number(limit),
-      orderBy: {
-        createdAt: 'asc'
-      },
-      pageIndex: Number(pageIndex)
+    const softwareRatings = await softwareServices.getSoftwareRatingsWithPagination(softwareId, {
+      limit,
+      orderBy,
+      pageIndex
     });
 
     if (!softwareRatings) {
@@ -148,11 +191,14 @@ export const getSoftwareRatings = async (req: Request, res: Response) => {
     }
 
     const totalSoftwareRatings = await softwareServices.getTotalSoftwareRatings(softwareId);
-    const totalPages = Math.ceil(totalSoftwareRatings / Number(limit));
+    const totalPages = Math.ceil(totalSoftwareRatings / limit);
 
-    const links = getPaginationLinks(req, { limit: Number(limit), page: Number(page), totalPages });
+    const links = getPaginationLinks(req as Request, { limit, page, totalPages });
+
+    const averageRating = await softwareServices.getAverageSoftwareRating(softwareId);
 
     res.status(200).json({
+      averageRating,
       links,
       message: "Software's ratings loaded",
       softwareRatings,
@@ -161,17 +207,28 @@ export const getSoftwareRatings = async (req: Request, res: Response) => {
       totalSoftwareRatings
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
 // Get software's categories
-export const getSoftwareCategories = async (req: Request, res: Response) => {
+export const getSoftwareCategories = async (
+  req: GetSoftwareCategoriesRequest,
+  res: GetSoftwareCategoriesResponse
+) => {
   try {
-    const { page, limit, pageIndex } = req.query;
+    const { limit = 10, page = 1, pageIndex = 0, orderBy = { name: 'asc' } } = req.query;
     const { softwareId } = req.params;
 
-    const software = await softwareServices.findSoftwareById(softwareId);
+    if (!softwareId) {
+      throw new HttpResponseError({
+        description: 'softwareId is required. Please check your params',
+        message: 'softwareId is required',
+        status: 'FORBIDDEN'
+      });
+    }
+
+    const software = await softwareServices.getSoftwareById(softwareId);
 
     if (!software) {
       throw new HttpResponseError({
@@ -181,14 +238,12 @@ export const getSoftwareCategories = async (req: Request, res: Response) => {
       });
     }
 
-    const softwareCategories = await softwareServices.findSoftwareCategoriesWithPagination(
+    const softwareCategories = await softwareServices.getSoftwareCategoriesWithPagination(
       softwareId,
       {
-        limit: Number(limit),
-        orderBy: {
-          name: 'asc'
-        },
-        pageIndex: Number(pageIndex)
+        limit,
+        orderBy,
+        pageIndex
       }
     );
 
@@ -200,9 +255,9 @@ export const getSoftwareCategories = async (req: Request, res: Response) => {
     }
 
     const totalSoftwareCategories = await softwareServices.getTotalSoftwareCategories(softwareId);
-    const totalPages = Math.ceil(totalSoftwareCategories / Number(limit));
+    const totalPages = Math.ceil(totalSoftwareCategories / limit);
 
-    const links = getPaginationLinks(req, { limit: Number(limit), page: Number(page), totalPages });
+    const links = getPaginationLinks(req as Request, { limit, page, totalPages });
 
     res.status(200).json({
       links,
@@ -213,7 +268,7 @@ export const getSoftwareCategories = async (req: Request, res: Response) => {
       totalSoftwareCategories
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -222,7 +277,7 @@ export const postSoftware = async (req: Request, res: Response) => {
   try {
     const { description, icon, name, categoryIds, url } = req.body;
 
-    const software = await softwareServices.findSoftwareByName(name);
+    const software = await softwareServices.getSoftwareByName(name);
 
     if (software) {
       throw new HttpResponseError({
@@ -232,10 +287,8 @@ export const postSoftware = async (req: Request, res: Response) => {
       });
     }
 
-    const createdSoftware = await softwareServices.createSoftware({
-      categories: {
-        connect: categoryIds.map((categoryId: string) => ({ id: categoryId }))
-      },
+    const createdSoftware = await softwareServices.postSoftware({
+      categoryIds,
       description,
       icon,
       name,
@@ -248,17 +301,25 @@ export const postSoftware = async (req: Request, res: Response) => {
       success: true
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
 // Put software
-export const putSoftware = async (req: Request, res: Response) => {
+export const putSoftware = async (req: PutSoftwareRequest, res: PutSoftwareResponse) => {
   try {
     const { softwareId } = req.params;
     const { description, icon, name, url } = req.body;
 
-    const software = await softwareServices.findSoftwareById(softwareId);
+    if (!softwareId) {
+      throw new HttpResponseError({
+        description: 'softwareId is required. Please check your params',
+        message: 'softwareId is required',
+        status: 'FORBIDDEN'
+      });
+    }
+
+    const software = await softwareServices.getSoftwareById(softwareId);
 
     if (!software) {
       throw new HttpResponseError({
@@ -268,7 +329,7 @@ export const putSoftware = async (req: Request, res: Response) => {
       });
     }
 
-    const editedSoftware = await softwareServices.updateSoftware(softwareId, {
+    const editedSoftware = await softwareServices.putSoftware(softwareId, {
       description,
       icon,
       name,
@@ -281,17 +342,28 @@ export const putSoftware = async (req: Request, res: Response) => {
       success: true
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
 // Put software's categories
-export const putSoftwareCategories = async (req: Request, res: Response) => {
+export const putSoftwareCategories = async (
+  req: PutSoftwareCategoriesRequest,
+  res: PutSoftwareCategoriesResponse
+) => {
   try {
     const { softwareId } = req.params;
     const { categoryIds } = req.body;
 
-    const software = await softwareServices.findSoftwareById(softwareId);
+    if (!softwareId) {
+      throw new HttpResponseError({
+        description: 'softwareId is required. Please check your params',
+        message: 'softwareId is required',
+        status: 'FORBIDDEN'
+      });
+    }
+
+    const software = await softwareServices.getSoftwareById(softwareId);
 
     if (!software) {
       throw new HttpResponseError({
@@ -301,27 +373,34 @@ export const putSoftwareCategories = async (req: Request, res: Response) => {
       });
     }
 
-    const addedCategoriesToSoftware = await softwareServices.updateSoftwareCategories(
-      softwareId,
+    const editedSoftware = await softwareServices.putSoftwareCategories(softwareId, {
       categoryIds
-    );
+    });
 
     res.status(200).json({
       message: 'Software edited',
-      software: addedCategoriesToSoftware,
+      software: editedSoftware,
       success: true
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
 // Delete software
-export const deleteSoftware = async (req: Request, res: Response) => {
+export const deleteSoftware = async (req: DeleteSoftwareRequest, res: DeleteSoftwareResponse) => {
   try {
     const { softwareId } = req.params;
 
-    const software = await softwareServices.findSoftwareById(softwareId);
+    if (!softwareId) {
+      throw new HttpResponseError({
+        description: 'softwareId is required. Please check your params',
+        message: 'softwareId is required',
+        status: 'FORBIDDEN'
+      });
+    }
+
+    const software = await softwareServices.getSoftwareById(softwareId);
 
     if (!software) {
       throw new HttpResponseError({
@@ -338,6 +417,6 @@ export const deleteSoftware = async (req: Request, res: Response) => {
       success: true
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };

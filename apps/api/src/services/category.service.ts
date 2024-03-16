@@ -1,9 +1,14 @@
-import type { Category, Prisma, Software } from '@one-folder-app/database';
+import type { Category, Software } from '@one-folder-app/database';
+import type {
+  GetCategoriesPaginationParams,
+  GetCategorySoftwarePaginationParams,
+  PostCategoryRequestBody,
+  PutCategoryRequestBody
+} from '@one-folder-app/types';
 
 import { dbClient } from '@/config';
-import type { PaginationOptions } from '@/types';
 
-export const findCateogryById = async (id: string): Promise<Category | null> => {
+export const getCategoryById = async (id: string): Promise<Category | null> => {
   const category = await dbClient.category.findUnique({
     where: {
       id
@@ -13,7 +18,7 @@ export const findCateogryById = async (id: string): Promise<Category | null> => 
   return category;
 };
 
-export const findCategoryByName = async (name: string): Promise<Category | null> => {
+export const getCategoryByName = async (name: string): Promise<Category | null> => {
   const category = await dbClient.category.findUnique({
     where: {
       name
@@ -23,21 +28,15 @@ export const findCategoryByName = async (name: string): Promise<Category | null>
   return category;
 };
 
-export const findCategoriesWithPagination = async (
-  options: PaginationOptions<Prisma.CategoryOrderByWithAggregationInput> = {
-    limit: 10,
-    orderBy: {
-      name: 'asc'
-    },
-    pageIndex: 0
-  }
+export const getCategoriesWithPagination = async (
+  options: GetCategoriesPaginationParams
 ): Promise<Category[] | null> => {
-  const { limit, orderBy, pageIndex } = options;
+  const { limit = 10, orderBy = { name: 'asc' }, pageIndex = 0 } = options;
 
   const categories = await dbClient.category.findMany({
     orderBy,
-    skip: pageIndex * limit,
-    take: limit
+    skip: Number(pageIndex) * Number(limit),
+    take: Number(limit)
   });
 
   if (!categories.length) return null;
@@ -45,22 +44,16 @@ export const findCategoriesWithPagination = async (
   return categories;
 };
 
-export const findCategorySoftwareWithPagination = async (
+export const getCategorySoftwareWithPagination = async (
   categoryId: string,
-  options: PaginationOptions<Prisma.SoftwareOrderByWithAggregationInput> = {
-    limit: 10,
-    orderBy: {
-      name: 'asc'
-    },
-    pageIndex: 0
-  }
+  options: GetCategorySoftwarePaginationParams
 ): Promise<Software[] | null> => {
-  const { limit, pageIndex, orderBy } = options;
+  const { limit = 10, orderBy = { name: 'asc' }, pageIndex = 0 } = options;
 
   const categorySoftware = await dbClient.software.findMany({
     orderBy,
-    skip: pageIndex * limit,
-    take: limit,
+    skip: Number(pageIndex) * Number(limit),
+    take: Number(limit),
     where: {
       categories: {
         some: {
@@ -75,20 +68,25 @@ export const findCategorySoftwareWithPagination = async (
   return categorySoftware;
 };
 
-export const createCategory = async (data: Prisma.CategoryCreateInput): Promise<Category> => {
+export const postCategory = async (data: PostCategoryRequestBody): Promise<Category> => {
+  const { name } = data;
+
   const category = await dbClient.category.create({
-    data
+    data: {
+      name
+    }
   });
 
   return category;
 };
 
-export const updateCategory = async (
-  id: string,
-  data: Prisma.CategoryUpdateInput
-): Promise<Category> => {
+export const putCategory = async (id: string, data: PutCategoryRequestBody): Promise<Category> => {
+  const { name } = data;
+
   const category = await dbClient.category.update({
-    data,
+    data: {
+      name
+    },
     where: {
       id
     }

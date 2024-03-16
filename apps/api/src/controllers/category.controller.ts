@@ -2,19 +2,31 @@ import type { Request, Response } from 'express';
 
 import { getPaginationLinks } from '@/middleware';
 import { categoryServices } from '@/services';
+import type {
+  DeleteCategoryRequest,
+  DeleteCategoryResponse,
+  GetCategoriesRequest,
+  GetCategoriesResponse,
+  GetCategoryRequest,
+  GetCategoryResponse,
+  GetCategorySoftwareRequest,
+  GetCategorySoftwareResponse,
+  PostCategoryRequest,
+  PostCategoryResponse,
+  PutCategoryRequest,
+  PutCategoryResponse
+} from '@/types';
 import { HttpResponseError, errorHandler } from '@/utils';
 
 // Get categories
-export const getCategories = async (req: Request, res: Response) => {
+export const getCategories = async (req: GetCategoriesRequest, res: GetCategoriesResponse) => {
   try {
-    const { page, limit, pageIndex } = req.query;
+    const { limit = 10, page = 1, pageIndex = 0, orderBy = { name: 'asc' } } = req.query;
 
-    const categories = await categoryServices.findCategoriesWithPagination({
-      limit: Number(limit),
-      orderBy: {
-        name: 'asc'
-      },
-      pageIndex: Number(pageIndex)
+    const categories = await categoryServices.getCategoriesWithPagination({
+      limit,
+      orderBy,
+      pageIndex
     });
 
     if (!categories) {
@@ -25,9 +37,9 @@ export const getCategories = async (req: Request, res: Response) => {
     }
 
     const totalCategories = await categoryServices.getTotalCategories();
-    const totalPages = Math.ceil(totalCategories / Number(limit));
+    const totalPages = Math.ceil(totalCategories / limit);
 
-    const links = getPaginationLinks(req, { limit: Number(limit), page: Number(page), totalPages });
+    const links = getPaginationLinks(req as Request, { limit, page, totalPages });
 
     res.status(200).json({
       categories,
@@ -38,22 +50,30 @@ export const getCategories = async (req: Request, res: Response) => {
       totalPages
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
 // Get category
-export const getCategory = async (req: Request, res: Response) => {
+export const getCategory = async (req: GetCategoryRequest, res: GetCategoryResponse) => {
   try {
     const { categoryId } = req.params;
 
-    const category = await categoryServices.findCateogryById(categoryId);
+    if (!categoryId) {
+      throw new HttpResponseError({
+        description: 'categoryId is required. Please check your params',
+        message: 'categoryId is required',
+        status: 'FORBIDDEN'
+      });
+    }
+
+    const category = await categoryServices.getCategoryById(categoryId);
 
     if (!category) {
       throw new HttpResponseError({
         description: `Category ${categoryId} not found`,
         message: 'Category not found',
-        status: 'NOT_FOUND'
+        status: 'BAD_REQUEST'
       });
     }
 
@@ -63,17 +83,28 @@ export const getCategory = async (req: Request, res: Response) => {
       success: true
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
 // Get category softwares
-export const getCategorySoftwares = async (req: Request, res: Response) => {
+export const getCategorySoftwares = async (
+  req: GetCategorySoftwareRequest,
+  res: GetCategorySoftwareResponse
+) => {
   try {
-    const { page, limit, pageIndex } = req.query;
+    const { limit = 10, page = 1, pageIndex = 0, orderBy = { name: 'asc' } } = req.query;
     const { categoryId } = req.params;
 
-    const category = await categoryServices.findCateogryById(categoryId);
+    if (!categoryId) {
+      throw new HttpResponseError({
+        description: 'categoryId is required. Please check your params',
+        message: 'categoryId is required',
+        status: 'FORBIDDEN'
+      });
+    }
+
+    const category = await categoryServices.getCategoryById(categoryId);
 
     if (!category) {
       throw new HttpResponseError({
@@ -83,48 +114,43 @@ export const getCategorySoftwares = async (req: Request, res: Response) => {
       });
     }
 
-    const categorySoftwares = await categoryServices.findCategorySoftwareWithPagination(
-      categoryId,
-      {
-        limit: Number(limit),
-        orderBy: {
-          name: 'asc'
-        },
-        pageIndex: Number(pageIndex)
-      }
-    );
+    const categorySoftware = await categoryServices.getCategorySoftwareWithPagination(categoryId, {
+      limit,
+      orderBy,
+      pageIndex
+    });
 
-    if (!categorySoftwares) {
+    if (!categorySoftware) {
       throw new HttpResponseError({
         message: "Category's softwares not found",
         status: 'NOT_FOUND'
       });
     }
 
-    const totalCategorySoftwares = await categoryServices.getTotalCategorySoftwares(categoryId);
-    const totalPages = Math.ceil(totalCategorySoftwares / Number(limit));
+    const totalCategorySoftware = await categoryServices.getTotalCategorySoftwares(categoryId);
+    const totalPages = Math.ceil(totalCategorySoftware / limit);
 
-    const links = getPaginationLinks(req, { limit: Number(limit), page: Number(page), totalPages });
+    const links = getPaginationLinks(req as Request, { limit, page, totalPages });
 
     res.status(200).json({
-      categorySoftwares,
+      categorySoftware,
       links,
       message: "Category's softwares loaded",
       success: true,
-      totalCategorySoftwares,
+      totalCategorySoftware,
       totalPages
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
 // Post category
-export const postCategory = async (req: Request, res: Response) => {
+export const postCategory = async (req: PostCategoryRequest, res: PostCategoryResponse) => {
   try {
     const { name } = req.body;
 
-    const category = await categoryServices.findCategoryByName(name);
+    const category = await categoryServices.getCategoryByName(name);
 
     if (category) {
       throw new HttpResponseError({
@@ -134,7 +160,7 @@ export const postCategory = async (req: Request, res: Response) => {
       });
     }
 
-    const createdCategory = await categoryServices.createCategory({
+    const createdCategory = await categoryServices.postCategory({
       name
     });
 
@@ -144,17 +170,25 @@ export const postCategory = async (req: Request, res: Response) => {
       success: true
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
 // Put category
-export const putCategory = async (req: Request, res: Response) => {
+export const putCategory = async (req: PutCategoryRequest, res: PutCategoryResponse) => {
   try {
-    const { name } = req.body;
     const { categoryId } = req.params;
+    const { name } = req.body;
 
-    let category = await categoryServices.findCateogryById(categoryId);
+    if (!categoryId) {
+      throw new HttpResponseError({
+        description: 'categoryId is required. Please check your params',
+        message: 'categoryId is required',
+        status: 'FORBIDDEN'
+      });
+    }
+
+    let category = await categoryServices.getCategoryById(categoryId);
 
     if (!category) {
       throw new HttpResponseError({
@@ -164,7 +198,7 @@ export const putCategory = async (req: Request, res: Response) => {
       });
     }
 
-    category = await categoryServices.findCategoryByName(name);
+    category = await categoryServices.getCategoryByName(name);
 
     if (category) {
       throw new HttpResponseError({
@@ -174,7 +208,7 @@ export const putCategory = async (req: Request, res: Response) => {
       });
     }
 
-    const editedCategory = await categoryServices.updateCategory(categoryId, {
+    const editedCategory = await categoryServices.putCategory(categoryId, {
       name
     });
 
@@ -184,16 +218,24 @@ export const putCategory = async (req: Request, res: Response) => {
       success: true
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
 // Delete category
-export const deleteCategory = async (req: Request, res: Response) => {
+export const deleteCategory = async (req: DeleteCategoryRequest, res: DeleteCategoryResponse) => {
   try {
     const { categoryId } = req.params;
 
-    const category = await categoryServices.findCateogryById(categoryId);
+    if (!categoryId) {
+      throw new HttpResponseError({
+        description: 'categoryId is required. Please check your params',
+        message: 'categoryId is required',
+        status: 'FORBIDDEN'
+      });
+    }
+
+    const category = await categoryServices.getCategoryById(categoryId);
 
     if (!category) {
       throw new HttpResponseError({
@@ -210,6 +252,6 @@ export const deleteCategory = async (req: Request, res: Response) => {
       success: true
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };

@@ -30,11 +30,11 @@ export const Header = () => {
           <Group h='100%' justify='space-between'>
             <Logo />
 
-            <Box h='100%' visibleFrom='xs'>
+            <Box h='100%' visibleFrom='md'>
               <Navbar />
             </Box>
 
-            <Flex align='center' gap={10} visibleFrom='xs'>
+            <Flex align='center' gap={10} visibleFrom='md'>
               <Flex>
                 <ActionIcon size={36} variant='default' onClick={toggleColorScheme}>
                   <IconSun />
@@ -47,7 +47,7 @@ export const Header = () => {
               </Flex>
             </Flex>
 
-            <Flex align='center' gap={10} hiddenFrom='xs'>
+            <Flex align='center' gap={10} hiddenFrom='md'>
               <ActionIcon size={36} variant='default' onClick={toggleColorScheme}>
                 <IconSun />
               </ActionIcon>
@@ -59,7 +59,7 @@ export const Header = () => {
       </header>
 
       <Drawer
-        hiddenFrom='sm'
+        hiddenFrom='md'
         opened={opened}
         padding='md'
         size='100%'

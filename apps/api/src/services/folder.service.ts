@@ -1,9 +1,16 @@
-import type { Comment, Folder, Prisma, Rating, Software } from '@one-folder-app/database';
+import type { Comment, Folder, Rating, Software } from '@one-folder-app/database';
+import type {
+  GetFolderCommentsPaginationParams,
+  GetFolderRatingsPaginationParams,
+  GetFolderSoftwarePaginationParams,
+  GetFoldersPaginationParams,
+  PostFolderRequestBody,
+  PutFolderRequestBody
+} from '@one-folder-app/types';
 
 import { dbClient } from '@/config';
-import type { PaginationOptions, PostFolderData, PutFolderData } from '@/types';
 
-export const findFolderById = async (id: string) => {
+export const getFolderById = async (id: string) => {
   const folder = await dbClient.folder.findUnique({
     include: {
       _count: {
@@ -25,16 +32,10 @@ export const findFolderById = async (id: string) => {
   return folder;
 };
 
-export const findFoldersWithPagination = async (
-  options: PaginationOptions<Prisma.FolderOrderByWithAggregationInput> = {
-    limit: 10,
-    orderBy: {
-      title: 'asc'
-    },
-    pageIndex: 0
-  }
+export const getFoldersWithPagination = async (
+  options: GetFoldersPaginationParams
 ): Promise<Folder[] | null> => {
-  const { limit, pageIndex, orderBy } = options;
+  const { limit = 10, pageIndex = 0, orderBy = { title: 'asc' } } = options;
 
   const folders = await dbClient.folder.findMany({
     include: {
@@ -47,8 +48,8 @@ export const findFoldersWithPagination = async (
       }
     },
     orderBy,
-    skip: pageIndex * limit,
-    take: limit
+    skip: Number(pageIndex) * Number(limit),
+    take: Number(limit)
   });
 
   if (!folders.length) return null;
@@ -56,22 +57,16 @@ export const findFoldersWithPagination = async (
   return folders;
 };
 
-export const findFolderCommentsWithPaginations = async (
+export const getFolderCommentsWithPaginations = async (
   folderId: string,
-  options: PaginationOptions<Prisma.CommentOrderByWithAggregationInput> = {
-    limit: 10,
-    orderBy: {
-      createdAt: 'asc'
-    },
-    pageIndex: 0
-  }
+  options: GetFolderCommentsPaginationParams
 ): Promise<Comment[] | null> => {
-  const { limit, pageIndex, orderBy } = options;
+  const { limit = 10, pageIndex = 0, orderBy = { createdAt: 'asc' } } = options;
 
   const folderComments = await dbClient.comment.findMany({
     orderBy,
-    skip: pageIndex * limit,
-    take: limit,
+    skip: Number(pageIndex) * Number(limit),
+    take: Number(limit),
     where: {
       folderId
     }
@@ -82,22 +77,16 @@ export const findFolderCommentsWithPaginations = async (
   return folderComments;
 };
 
-export const findFolderRatingsWithPagination = async (
+export const getFolderRatingsWithPagination = async (
   folderId: string,
-  options: PaginationOptions<Prisma.RatingOrderByWithAggregationInput> = {
-    limit: 10,
-    orderBy: {
-      createdAt: 'asc'
-    },
-    pageIndex: 0
-  }
+  options: GetFolderRatingsPaginationParams
 ): Promise<Rating[] | null> => {
-  const { limit, pageIndex, orderBy } = options;
+  const { limit = 10, pageIndex = 0, orderBy = { commentId: 'asc' } } = options;
 
   const folderRatings = await dbClient.rating.findMany({
     orderBy,
-    skip: pageIndex * limit,
-    take: limit,
+    skip: Number(pageIndex) * Number(limit),
+    take: Number(limit),
     where: {
       folderId
     }
@@ -108,22 +97,16 @@ export const findFolderRatingsWithPagination = async (
   return folderRatings;
 };
 
-export const findFolderSoftwareWithPagination = async (
+export const getFolderSoftwareWithPagination = async (
   folderId: string,
-  options: PaginationOptions<Prisma.SoftwareOrderByWithAggregationInput> = {
-    limit: 10,
-    orderBy: {
-      createdAt: 'asc'
-    },
-    pageIndex: 0
-  }
+  options: GetFolderSoftwarePaginationParams
 ): Promise<Software[] | null> => {
-  const { limit, pageIndex, orderBy } = options;
+  const { limit = 10, pageIndex = 0, orderBy = { name: 'asc' } } = options;
 
   const folderSoftware = await dbClient.software.findMany({
     orderBy,
-    skip: pageIndex * limit,
-    take: limit,
+    skip: Number(pageIndex) * Number(limit),
+    take: Number(limit),
     where: {
       folders: {
         some: {
@@ -138,7 +121,7 @@ export const findFolderSoftwareWithPagination = async (
   return folderSoftware;
 };
 
-export const createFolder = async (data: PostFolderData): Promise<Folder> => {
+export const postFolder = async (data: PostFolderRequestBody): Promise<Folder> => {
   const { authorId, title, access, description, image } = data;
 
   const folder = await dbClient.folder.create({
@@ -154,7 +137,7 @@ export const createFolder = async (data: PostFolderData): Promise<Folder> => {
   return folder;
 };
 
-export const updateFolder = async (id: string, data: PutFolderData): Promise<Folder> => {
+export const putFolder = async (id: string, data: PutFolderRequestBody): Promise<Folder> => {
   const { access, description, image, title } = data;
 
   const folder = await dbClient.folder.update({

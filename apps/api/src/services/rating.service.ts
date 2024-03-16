@@ -1,9 +1,14 @@
-import type { Prisma, Rating } from '@one-folder-app/database';
+import type { Rating } from '@one-folder-app/database';
+import type {
+  GetRatingsPaginationParams,
+  PostRatingRequestBody,
+  PutRatingRequestBody
+} from '@one-folder-app/types';
 
 import { dbClient } from '@/config';
-import type { Entity, PaginationOptions, PostRatingData, PutRatingInEntityData } from '@/types';
+import type { Entity, PutRatingWithEntityData } from '@/types';
 
-export const findRatingById = async (id: string): Promise<Rating | null> => {
+export const getRatingById = async (id: string): Promise<Rating | null> => {
   const rating = await dbClient.rating.findUnique({
     where: {
       id
@@ -13,7 +18,7 @@ export const findRatingById = async (id: string): Promise<Rating | null> => {
   return rating;
 };
 
-export const findRatingByEntityId = async (
+export const getRatingByEntityId = async (
   userId: string,
   entityId: string
 ): Promise<Rating | null> => {
@@ -27,21 +32,15 @@ export const findRatingByEntityId = async (
   return rating;
 };
 
-export const findRatingsWithPagination = async (
-  options: PaginationOptions<Prisma.RatingOrderByWithAggregationInput> = {
-    limit: 10,
-    orderBy: {
-      createdAt: 'asc'
-    },
-    pageIndex: 0
-  }
+export const getRatingsWithPagination = async (
+  options: GetRatingsPaginationParams
 ): Promise<Rating[] | null> => {
-  const { limit, orderBy, pageIndex } = options;
+  const { limit = 10, pageIndex = 0, orderBy = { createdAt: 'asc' } } = options;
 
   const ratings = await dbClient.rating.findMany({
     orderBy,
-    skip: pageIndex * limit,
-    take: limit
+    skip: Number(pageIndex) * Number(limit),
+    take: Number(limit)
   });
 
   if (!ratings.length) return null;
@@ -49,12 +48,12 @@ export const findRatingsWithPagination = async (
   return ratings;
 };
 
-export const createRating = async (data: PostRatingData): Promise<Rating | null> => {
-  const { authorId, commentId, folderId, softwareId, rating } = data;
+export const postRating = async (data: PostRatingRequestBody): Promise<Rating | null> => {
+  const { userId, commentId, folderId, softwareId, rating } = data;
 
   const createdRating = await dbClient.rating.create({
     data: {
-      authorId,
+      authorId: userId,
       commentId,
       folderId,
       rating,
@@ -65,21 +64,22 @@ export const createRating = async (data: PostRatingData): Promise<Rating | null>
   return createdRating;
 };
 
-export const updateRating = async (
-  id: string,
-  data: Prisma.RatingUpdateInput
-): Promise<Rating | null> => {
-  const rating = await dbClient.rating.update({
-    data,
+export const putRating = async (id: string, data: PutRatingRequestBody): Promise<Rating | null> => {
+  const { rating } = data;
+
+  const updatedRating = await dbClient.rating.update({
+    data: {
+      rating
+    },
     where: {
       id
     }
   });
 
-  return rating;
+  return updatedRating;
 };
 
-export const updateRatingInEntity = async (data: PutRatingInEntityData): Promise<Entity | null> => {
+export const putRatingInEntity = async (data: PutRatingWithEntityData): Promise<Entity | null> => {
   const { averageRating, entityId, entityName } = data;
 
   const entity = await dbClient[entityName].update({

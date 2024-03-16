@@ -1,9 +1,14 @@
-import type { Comment, Prisma, Rating } from '@one-folder-app/database';
+import type { Comment, Rating } from '@one-folder-app/database';
+import type {
+  GetCommentRatingsPaginationParams,
+  GetCommentsPaginationParams,
+  PostCommentRequestBody,
+  PutCommentRequestBody
+} from '@one-folder-app/types';
 
 import { dbClient } from '@/config';
-import type { PaginationOptions, PostCommentData } from '@/types';
 
-export const findCommentById = async (id: string): Promise<Comment | null> => {
+export const getCommentById = async (id: string): Promise<Comment | null> => {
   const comment = await dbClient.comment.findUnique({
     include: {
       _count: {
@@ -21,7 +26,7 @@ export const findCommentById = async (id: string): Promise<Comment | null> => {
   return comment;
 };
 
-export const findCommentByAuthorIdAndFolderId = async (
+export const getCommentByAuthorIdAndFolderId = async (
   authorId: string,
   folderId: string
 ): Promise<Comment | null> => {
@@ -35,16 +40,10 @@ export const findCommentByAuthorIdAndFolderId = async (
   return comment;
 };
 
-export const findCommentsWithPagination = async (
-  options: PaginationOptions<Prisma.CommentOrderByWithAggregationInput> = {
-    limit: 10,
-    orderBy: {
-      createdAt: 'asc'
-    },
-    pageIndex: 0
-  }
+export const getCommentsWithPagination = async (
+  options: GetCommentsPaginationParams
 ): Promise<Comment[] | null> => {
-  const { limit, pageIndex, orderBy } = options;
+  const { limit = 10, orderBy = { createdAt: 'asc' }, pageIndex = 0 } = options;
 
   const comments = await dbClient.comment.findMany({
     include: {
@@ -55,8 +54,8 @@ export const findCommentsWithPagination = async (
       }
     },
     orderBy,
-    skip: pageIndex * limit,
-    take: limit
+    skip: Number(pageIndex) * Number(limit),
+    take: Number(limit)
   });
 
   if (!comments.length) return null;
@@ -66,20 +65,14 @@ export const findCommentsWithPagination = async (
 
 export const getCommentRatingsWithPagination = async (
   id: string,
-  options: PaginationOptions<Prisma.RatingOrderByWithAggregationInput> = {
-    limit: 10,
-    orderBy: {
-      createdAt: 'asc'
-    },
-    pageIndex: 0
-  }
+  options: GetCommentRatingsPaginationParams
 ): Promise<Rating[] | null> => {
-  const { limit, pageIndex, orderBy } = options;
+  const { limit = 10, orderBy = { createdAt: 'asc' }, pageIndex = 0 } = options;
 
   const ratings = await dbClient.rating.findMany({
     orderBy,
-    skip: pageIndex * limit,
-    take: limit,
+    skip: Number(pageIndex) * Number(limit),
+    take: Number(limit),
     where: {
       commentId: id
     }
@@ -90,10 +83,8 @@ export const getCommentRatingsWithPagination = async (
   return ratings;
 };
 
-export const createComment = async (data: PostCommentData): Promise<Comment> => {
+export const postComment = async (data: PostCommentRequestBody): Promise<Comment> => {
   const { authorId, folderId, message } = data;
-
-  console.log([authorId, folderId, message]);
 
   const comment = await dbClient.comment.create({
     data: {
@@ -106,12 +97,13 @@ export const createComment = async (data: PostCommentData): Promise<Comment> => 
   return comment;
 };
 
-export const updateComment = async (
-  id: string,
-  data: Prisma.CommentUpdateInput
-): Promise<Comment> => {
+export const putComment = async (id: string, data: PutCommentRequestBody): Promise<Comment> => {
+  const { message } = data;
+
   const comment = await dbClient.comment.update({
-    data,
+    data: {
+      message
+    },
     where: {
       id
     }
