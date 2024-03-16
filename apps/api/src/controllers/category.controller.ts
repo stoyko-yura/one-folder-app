@@ -1,4 +1,4 @@
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 
 import { getPaginationLinks } from '@/middleware';
 import { categoryServices } from '@/services';
@@ -50,7 +50,7 @@ export const getCategories = async (req: GetCategoriesRequest, res: GetCategorie
       totalPages
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -83,7 +83,7 @@ export const getCategory = async (req: GetCategoryRequest, res: GetCategoryRespo
       success: true
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -141,7 +141,7 @@ export const getCategorySoftwares = async (
       totalPages
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -170,7 +170,7 @@ export const postCategory = async (req: PostCategoryRequest, res: PostCategoryRe
       success: true
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -218,7 +218,7 @@ export const putCategory = async (req: PutCategoryRequest, res: PutCategoryRespo
       success: true
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -252,6 +252,6 @@ export const deleteCategory = async (req: DeleteCategoryRequest, res: DeleteCate
       success: true
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };

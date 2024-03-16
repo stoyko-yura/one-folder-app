@@ -85,8 +85,8 @@ export const getUsersWithPagination = async (
       profile: true
     },
     orderBy,
-    skip: pageIndex * limit,
-    take: limit
+    skip: Number(pageIndex) * Number(limit),
+    take: Number(limit)
   });
 
   if (!users.length) return null;
@@ -102,8 +102,8 @@ export const getUserCommentsWithPagination = async (
 
   const userComments = await dbClient.comment.findMany({
     orderBy,
-    skip: pageIndex * limit,
-    take: limit,
+    skip: Number(pageIndex) * Number(limit),
+    take: Number(limit),
     where: {
       authorId: userId
     }
@@ -122,8 +122,8 @@ export const getUserFoldersWithPagination = async (
 
   const userFolders = await dbClient.folder.findMany({
     orderBy,
-    skip: pageIndex * limit,
-    take: limit,
+    skip: Number(pageIndex) * Number(limit),
+    take: Number(limit),
     where: {
       authorId: userId
     }

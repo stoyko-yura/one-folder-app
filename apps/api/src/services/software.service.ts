@@ -59,8 +59,8 @@ export const getSoftwareWithPagination = async (
       categories: true
     },
     orderBy,
-    skip: pageIndex * limit,
-    take: limit
+    skip: Number(pageIndex) * Number(limit),
+    take: Number(limit)
   });
 
   if (!software.length) return null;
@@ -76,8 +76,8 @@ export const getSoftwareFoldersWithPagination = async (
 
   const softwareFolders = await dbClient.folder.findMany({
     orderBy,
-    skip: pageIndex * limit,
-    take: limit,
+    skip: Number(pageIndex) * Number(limit),
+    take: Number(limit),
     where: {
       software: {
         some: {
@@ -100,8 +100,8 @@ export const getSoftwareRatingsWithPagination = async (
 
   const softwareRatings = await dbClient.rating.findMany({
     orderBy,
-    skip: pageIndex * limit,
-    take: limit,
+    skip: Number(pageIndex) * Number(limit),
+    take: Number(limit),
     where: {
       softwareId
     }
@@ -120,8 +120,8 @@ export const getSoftwareCategoriesWithPagination = async (
 
   const softwareCategories = await dbClient.category.findMany({
     orderBy,
-    skip: pageIndex * limit,
-    take: limit,
+    skip: Number(pageIndex) * Number(limit),
+    take: Number(limit),
     where: {
       software: {
         some: {

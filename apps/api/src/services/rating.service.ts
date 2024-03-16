@@ -39,8 +39,8 @@ export const getRatingsWithPagination = async (
 
   const ratings = await dbClient.rating.findMany({
     orderBy,
-    skip: pageIndex * limit,
-    take: limit
+    skip: Number(pageIndex) * Number(limit),
+    take: Number(limit)
   });
 
   if (!ratings.length) return null;

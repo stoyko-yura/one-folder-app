@@ -54,8 +54,8 @@ export const getCommentsWithPagination = async (
       }
     },
     orderBy,
-    skip: pageIndex * limit,
-    take: limit
+    skip: Number(pageIndex) * Number(limit),
+    take: Number(limit)
   });
 
   if (!comments.length) return null;
@@ -71,8 +71,8 @@ export const getCommentRatingsWithPagination = async (
 
   const ratings = await dbClient.rating.findMany({
     orderBy,
-    skip: pageIndex * limit,
-    take: limit,
+    skip: Number(pageIndex) * Number(limit),
+    take: Number(limit),
     where: {
       commentId: id
     }

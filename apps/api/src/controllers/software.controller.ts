@@ -55,7 +55,7 @@ export const getSoftwares = async (req: GetSoftwaresRequest, res: GetSoftwaresRe
       totalSoftware
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -88,7 +88,7 @@ export const getSoftware = async (req: GetSoftwareRequest, res: GetSoftwareRespo
       success: true
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -146,7 +146,7 @@ export const getSoftwareFolders = async (
       totalSoftwareFolders
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -207,7 +207,7 @@ export const getSoftwareRatings = async (
       totalSoftwareRatings
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -268,7 +268,7 @@ export const getSoftwareCategories = async (
       totalSoftwareCategories
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -301,7 +301,7 @@ export const postSoftware = async (req: Request, res: Response) => {
       success: true
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -342,7 +342,7 @@ export const putSoftware = async (req: PutSoftwareRequest, res: PutSoftwareRespo
       success: true
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -383,7 +383,7 @@ export const putSoftwareCategories = async (
       success: true
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -417,6 +417,6 @@ export const deleteSoftware = async (req: DeleteSoftwareRequest, res: DeleteSoft
       success: true
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };

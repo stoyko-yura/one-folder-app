@@ -48,8 +48,8 @@ export const getFoldersWithPagination = async (
       }
     },
     orderBy,
-    skip: pageIndex * limit,
-    take: limit
+    skip: Number(pageIndex) * Number(limit),
+    take: Number(limit)
   });
 
   if (!folders.length) return null;
@@ -65,8 +65,8 @@ export const getFolderCommentsWithPaginations = async (
 
   const folderComments = await dbClient.comment.findMany({
     orderBy,
-    skip: pageIndex * limit,
-    take: limit,
+    skip: Number(pageIndex) * Number(limit),
+    take: Number(limit),
     where: {
       folderId
     }
@@ -85,8 +85,8 @@ export const getFolderRatingsWithPagination = async (
 
   const folderRatings = await dbClient.rating.findMany({
     orderBy,
-    skip: pageIndex * limit,
-    take: limit,
+    skip: Number(pageIndex) * Number(limit),
+    take: Number(limit),
     where: {
       folderId
     }
@@ -105,8 +105,8 @@ export const getFolderSoftwareWithPagination = async (
 
   const folderSoftware = await dbClient.software.findMany({
     orderBy,
-    skip: pageIndex * limit,
-    take: limit,
+    skip: Number(pageIndex) * Number(limit),
+    take: Number(limit),
     where: {
       folders: {
         some: {

@@ -1,5 +1,5 @@
 import type { RatingData } from '@one-folder-app/types';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 
 import { getPaginationLinks } from '@/middleware';
 import { commonServices, ratingServices, userServices } from '@/services';
@@ -49,7 +49,7 @@ export const getRatings = async (req: GetRatingsRequest, res: GetRatingsResponse
       totalRatings
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -82,7 +82,7 @@ export const getRating = async (req: GetRatingRequest, res: GetRatingResponse) =
       success: true
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -168,7 +168,7 @@ export const postRating = async (req: PostRatingRequest, res: PostRatingResponse
       success: true
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -265,7 +265,7 @@ export const putRating = async (req: PutRatingRequest, res: PutRatingResponse) =
       success: true
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -299,6 +299,6 @@ export const deleteRating = async (req: DeleteRatingRequest, res: DeleteRatingRe
       success: true
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };

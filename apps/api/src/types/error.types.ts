@@ -1,3 +1,6 @@
+import type { BaseErrorResponseBody } from '@one-folder-app/types';
+import type { Response } from 'express';
+
 export type Statuses =
   | 'OK'
   | 'NO_CONTENT'
@@ -23,3 +26,5 @@ export interface HttpResponseErrorArgs {
   message: string;
   description?: string;
 }
+
+export type HttpErrorResponse = Response<BaseErrorResponseBody>;

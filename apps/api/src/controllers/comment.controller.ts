@@ -1,4 +1,4 @@
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 
 import { getPaginationLinks } from '@/middleware';
 import { commentServices, folderServices, userServices } from '@/services';
@@ -50,7 +50,7 @@ export const getComments = async (req: GetCommentsRequest, res: GetCommentsRespo
       totalPages
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -83,7 +83,7 @@ export const getComment = async (req: GetCommentRequest, res: GetCommentResponse
       success: true
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -141,7 +141,7 @@ export const getCommentRatings = async (
       totalPages
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -192,7 +192,7 @@ export const postComment = async (req: PostCommentRequest, res: PostCommentRespo
       success: true
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -230,7 +230,7 @@ export const putComment = async (req: PutCommentRequest, res: PutCommentResponse
       success: true
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -264,6 +264,6 @@ export const deleteComment = async (req: DeleteCommentRequest, res: DeleteCommen
       success: true
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };

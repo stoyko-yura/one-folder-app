@@ -1,5 +1,5 @@
 import type { FolderData } from '@one-folder-app/types';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 
 import { getPaginationLinks } from '@/middleware';
 import { folderServices, userServices } from '@/services';
@@ -55,7 +55,7 @@ export const getFolders = async (req: GetFoldersRequest, res: GetFoldersResponse
       totalPages
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -88,7 +88,7 @@ export const getFolder = async (req: GetFolderRequest, res: GetFolderResponse) =
       success: true
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -146,7 +146,7 @@ export const getFolderComments = async (
       totalPages
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -207,7 +207,7 @@ export const getFolderRatings = async (
       totalPages
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -265,7 +265,7 @@ export const getFolderSoftware = async (
       totalPages
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -298,7 +298,7 @@ export const postFolder = async (req: PostFolderRequest, res: PostFolderResponse
       success: true
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -339,7 +339,7 @@ export const putFolder = async (req: PutFolderRequest, res: PutFolderResponse) =
       success: false
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -373,6 +373,6 @@ export const deleteFolder = async (req: DeleteFolderRequest, res: DeleteFolderRe
       success: true
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };

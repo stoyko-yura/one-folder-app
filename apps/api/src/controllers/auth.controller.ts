@@ -1,4 +1,5 @@
 import type { UserData } from '@one-folder-app/types';
+import type { Response } from 'express';
 
 import { authServices, userServices } from '@/services';
 import type {
@@ -47,7 +48,7 @@ export const signIn = async (req: SignInRequest, res: SignInResponse) => {
       user: excludeFields(user, ['hash']) as UserData
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response as Response);
   }
 };
 
@@ -88,7 +89,7 @@ export const signUp = async (req: SignUpRequest, res: SignUpResponse) => {
       user: excludeFields(createdUser, ['hash']) as UserData
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -116,7 +117,7 @@ export const getMe = async (req: GetMeRequest, res: GetMeResponse) => {
       user: excludeFields(user, ['hash']) as UserData
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -166,6 +167,6 @@ export const changePassword = async (req: ChangePasswordRequest, res: ChangePass
       user: excludeFields(editedUser, ['hash']) as UserData
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };

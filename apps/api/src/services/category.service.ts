@@ -35,8 +35,8 @@ export const getCategoriesWithPagination = async (
 
   const categories = await dbClient.category.findMany({
     orderBy,
-    skip: pageIndex * limit,
-    take: limit
+    skip: Number(pageIndex) * Number(limit),
+    take: Number(limit)
   });
 
   if (!categories.length) return null;
@@ -52,8 +52,8 @@ export const getCategorySoftwareWithPagination = async (
 
   const categorySoftware = await dbClient.software.findMany({
     orderBy,
-    skip: pageIndex * limit,
-    take: limit,
+    skip: Number(pageIndex) * Number(limit),
+    take: Number(limit),
     where: {
       categories: {
         some: {

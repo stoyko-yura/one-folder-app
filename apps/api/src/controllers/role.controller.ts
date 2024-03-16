@@ -1,3 +1,5 @@
+import type { Response } from 'express';
+
 import { dbEnums } from '@/config';
 import type { GetRolesRequest, GetRolesResponse } from '@/types';
 import { errorHandler, type HttpResponseError } from '@/utils';
@@ -13,6 +15,6 @@ export const getRoles = (req: GetRolesRequest, res: GetRolesResponse) => {
       success: true
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };

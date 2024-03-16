@@ -1,5 +1,5 @@
 import type { UserData } from '@one-folder-app/types';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 
 import { getPaginationLinks } from '@/middleware';
 import { userServices } from '@/services';
@@ -51,7 +51,7 @@ export const getUsers = async (req: GetUsersRequest, res: GetUsersResponse) => {
       users: excludeFields(users, ['hash']) as UserData[]
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -76,7 +76,7 @@ export const getUser = async (req: GetUserRequest, res: GetUserResponse) => {
       user: excludeFields(user, ['hash']) as UserData
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -134,7 +134,7 @@ export const getUserComments = async (
       userComments
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -189,7 +189,7 @@ export const getUserFolders = async (req: GetUserFoldersRequest, res: GetUserFol
       userFolders
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -231,7 +231,7 @@ export const putUser = async (req: PutUserRequest, res: PutUserResponse) => {
       user: excludeFields(editedUser, ['hash']) as UserData
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
 
@@ -265,6 +265,6 @@ export const deleteUser = async (req: DeleteUserRequest, res: DeleteUserResponse
       success: true
     });
   } catch (error) {
-    errorHandler(error as HttpResponseError, res);
+    errorHandler(error as HttpResponseError, res as Response);
   }
 };
