@@ -5,8 +5,5 @@ module.exports = {
     root: true,
     tsconfigRootDir: __dirname
   },
-  ignorePatterns: ['dist', '.eslintrc.cjs'],
-  rules: {
-    'react-refresh/only-export-components': ['warn', { allowConstantExport: true }]
-  }
+  ignorePatterns: ['dist', '.eslintrc.cjs']
 };

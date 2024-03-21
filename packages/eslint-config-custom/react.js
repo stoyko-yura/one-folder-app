@@ -57,6 +57,7 @@ module.exports = {
     'no-param-reassign': 0,
     'sort-keys': [1, 'asc', { natural: true, allowLineSeparatedGroups: true }],
     'react/jsx-filename-extension': [2, { extensions: ['.js', '.jsx', '.ts', '.tsx'] }],
+    'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     'react/jsx-sort-props': [
       2,
       {
