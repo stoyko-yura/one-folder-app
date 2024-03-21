@@ -7,7 +7,7 @@ import type {
   UserPaginationOptions
 } from './pagination.types';
 
-export interface UserData extends User {
+export interface UserData extends Omit<User, 'hash'> {
   profile: Profile;
   _count?: {
     folders: number;
@@ -21,7 +21,7 @@ export interface GetUserRequestParams {
 }
 
 export interface GetUserResponseBody extends BaseResponseBody {
-  user: Omit<UserData, 'hash'>;
+  user: UserData;
   token?: string;
 }
 
@@ -36,7 +36,7 @@ export interface GetUsersResponseBody extends BaseResponseBody {
   links: Links;
   totalUsers: number;
   totalPages: number;
-  users: Omit<UserData, 'hash'>[];
+  users: UserData[];
 }
 
 // Get user's folders
@@ -89,7 +89,7 @@ export interface PutUserRequestBody {
 }
 
 export interface PutUserResponseBody extends BaseResponseBody {
-  user: Omit<UserData, 'hash'>;
+  user: UserData;
 }
 
 // Delete user

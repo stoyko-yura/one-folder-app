@@ -9,7 +9,7 @@ export interface SignInRequestBody {
 
 export interface SignInResponseBody extends BaseResponseBody {
   token?: string;
-  user: Omit<UserData, 'hash'>;
+  user: UserData;
 }
 
 // Sign up
@@ -23,7 +23,7 @@ export interface SignUpRequestBody {
 
 export interface SignUpResponseBody extends BaseResponseBody {
   token?: string;
-  user: Omit<UserData, 'hash'>;
+  user: UserData;
 }
 
 // Get me
@@ -33,7 +33,7 @@ export interface GetMeRequestBody {
 
 export interface GetMeResponseBody extends BaseResponseBody {
   token?: string;
-  user: Omit<UserData, 'hash'>;
+  user: UserData;
 }
 
 // Change password
@@ -45,5 +45,5 @@ export interface ChangePasswordRequestBody {
 
 export interface ChangePasswordResponseBody extends BaseResponseBody {
   token?: string;
-  user: Omit<UserData, 'hash'>;
+  user: UserData;
 }
