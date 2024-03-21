@@ -1,0 +1,16 @@
+@import 'fonts';
+@import 'mixins';
+@import 'reset';
+@import 'themes';
+@import 'variables';
+
+html,
+:root {
+  @include defaultFont();
+}
+
+body {
+}
+
+main {
+}

@@ -1,0 +1,45 @@
+:root {
+  // HEX
+  --color-body: #ffffff;
+  --color-text: #000000;
+
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  --color-primary: #228be6;
+  --color-secondary: #868e96;
+  --color-success: #40c057;
+  --color-info: #15aabf;
+  --color-warning: #ffd43b;
+  --color-danger: #fa5252;
+
+  // RGB
+  --color-body-rgb: 255, 255, 255;
+  --color-text-rgb: 0, 0, 0;
+
+  --color-white-rgb: 255, 255, 255;
+  --color-black-rgb: 0, 0, 0;
+
+  --color-primary-rgb: 34, 139, 230;
+  --color-secondary-rgb: 134, 142, 150;
+  --color-success-rgb: 64, 192, 87;
+  --color-info-rgb: 21, 170, 191;
+  --color-warning-rgb: 255, 212, 59;
+  --color-danger-rgb: 250, 82, 82;
+}
+
+:root[theme='dark'] {
+  // HEX
+  --color-body: #242424;
+  --color-text: #c9c9c9;
+
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  // RGB
+  --color-body-rgb: 255, 255, 255;
+  --color-text-rgb: 0, 0, 0;
+
+  --color-white-rgb: 255, 255, 255;
+  --color-black-rgb: 0, 0, 0;
+}
