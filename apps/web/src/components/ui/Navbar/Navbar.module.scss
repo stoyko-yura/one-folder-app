@@ -1,0 +1,13 @@
+@import '~/mixins';
+
+.navbar {
+  ul {
+    @include flexbox();
+    column-gap: 14px;
+
+    li {
+      width: fit-content;
+      height: fit-content;
+    }
+  }
+}

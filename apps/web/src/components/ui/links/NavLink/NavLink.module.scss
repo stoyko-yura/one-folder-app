@@ -1,0 +1,32 @@
+.nav_link {
+  padding: 4px 8px;
+  color: var(--color-text);
+  text-decoration: none;
+  position: relative;
+  transition: all 0.4s ease;
+
+  &:before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    height: 3px;
+    width: 0%;
+    background: var(--color-primary);
+    border-radius: 12px;
+    transform: translateX(-50%);
+    transition: all 0.4s ease;
+  }
+
+  &:hover {
+    &:before {
+      width: 100%;
+    }
+  }
+}
+
+.is_active {
+  &:before {
+    width: 100%;
+  }
+}

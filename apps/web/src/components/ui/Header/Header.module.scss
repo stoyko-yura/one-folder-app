@@ -1,0 +1,6 @@
+@import '~/mixins';
+
+.header {
+  height: var(--header-height);
+  @include flexbox($alignItems: center, $justifyContent: space-between);
+}
