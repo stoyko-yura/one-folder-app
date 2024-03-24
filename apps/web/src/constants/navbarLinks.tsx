@@ -4,7 +4,7 @@ import HomeIcon from '@mui/icons-material/Home';
 
 import type { NavbarLink } from '@/types';
 
-export const LINKS: NavbarLink[] = [
+export const NAVBAR_LINKS: NavbarLink[] = [
   {
     icon: HomeIcon,
     label: 'Home',

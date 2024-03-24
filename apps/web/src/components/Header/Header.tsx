@@ -1,23 +1,28 @@
-import { AppBar, Box, Toolbar } from '@mui/material';
+import { AppBar, Box, Stack, Toolbar } from '@mui/material';
+import type { UserData } from '@one-folder-app/types';
 
-import { Logo, MobileNavbar, Navbar } from './_locals';
+import { AuthMenu, Logo, MobileNavbar, Navbar, UserMenu } from './_locals';
+
+const IS_AUTH = false;
 
 export const Header = () => {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar color='default' position='static'>
         <Toolbar>
-          <MobileNavbar />
+          <Stack alignItems='center' columnGap={2} direction='row'>
+            <MobileNavbar />
 
-          <Box sx={{ mr: { md: '20px', xs: '0px' } }}>
-            <Logo />
-          </Box>
+            <Box sx={{ display: { sm: 'block', xs: 'none' } }}>
+              <Logo />
+            </Box>
 
-          <Navbar />
+            <Navbar />
+          </Stack>
 
           <Box sx={{ flexGrow: 1 }} />
 
-          <div>User menu</div>
+          {IS_AUTH ? <UserMenu user={{} as UserData} /> : <AuthMenu />}
         </Toolbar>
       </AppBar>
     </Box>

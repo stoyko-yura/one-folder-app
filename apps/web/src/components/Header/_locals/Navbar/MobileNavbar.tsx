@@ -12,7 +12,7 @@ import {
 import { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 
-import { LINKS } from '@/constants';
+import { NAVBAR_LINKS } from '@/constants';
 
 export const MobileNavbar = () => {
   const [opened, setOpen] = useState<boolean>(false);
@@ -33,7 +33,7 @@ export const MobileNavbar = () => {
       <Drawer open={opened} role='presentation' onClose={onCloseMobileNavbar}>
         <Box sx={{ width: '300px' }}>
           <List>
-            {LINKS.map((link, index) => {
+            {NAVBAR_LINKS.map((link, index) => {
               const LinkIcon = link.icon;
 
               return (
@@ -45,9 +45,11 @@ export const MobileNavbar = () => {
                   onClick={onCloseMobileNavbar}
                 >
                   <ListItemButton>
-                    <ListItemIcon>
-                      <LinkIcon />
-                    </ListItemIcon>
+                    {LinkIcon && (
+                      <ListItemIcon>
+                        <LinkIcon />
+                      </ListItemIcon>
+                    )}
                     <ListItemText primary={link.label} sx={{ color: 'text.primary' }} />
                   </ListItemButton>
                 </ListItem>

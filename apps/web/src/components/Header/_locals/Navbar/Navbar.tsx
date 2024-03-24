@@ -1,7 +1,7 @@
-import { Box, Button } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
-import { LINKS } from '@/constants';
+import { NAVBAR_LINKS } from '@/constants';
 
 export const Navbar = () => {
   const navigate = useNavigate();
@@ -12,13 +12,15 @@ export const Navbar = () => {
 
   return (
     <Box sx={{ display: { md: 'flex', xs: 'none' }, flexGrow: 1 }}>
-      {LINKS.map((link, index) => (
+      {NAVBAR_LINKS.map((link, index) => (
         <Button
           key={index}
-          sx={{ color: 'text.primary', display: 'block', my: 2 }}
+          color='inherit'
+          sx={{ display: 'block', my: 2 }}
+          variant='text'
           onClick={() => onNavigate(link.path)}
         >
-          {link.label}
+          <Typography color='text.primary'>{link.label}</Typography>
         </Button>
       ))}
     </Box>
