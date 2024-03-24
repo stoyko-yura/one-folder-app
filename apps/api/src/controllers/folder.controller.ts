@@ -83,7 +83,7 @@ export const getFolder = async (req: GetFolderRequest, res: GetFolderResponse) =
     }
 
     res.status(200).json({
-      folder: excludeFields(folder, ['author.hash']) as FolderData,
+      folder: excludeFields(folder, ['author.hash']) as unknown as FolderData,
       message: 'Folder loaded',
       success: true
     });
