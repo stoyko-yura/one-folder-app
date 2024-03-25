@@ -7,15 +7,19 @@ import type { UserData } from '@one-folder-app/types';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { useAuth } from '@/hooks';
+
 interface UserMenuProps {
   user: UserData;
 }
 
 export const UserMenu = ({ user }: UserMenuProps) => {
-  const [userMenuEl, setUserMenuEl] = useState<null | HTMLElement>(null);
-  const [settingsMenuEl, setSettingsMenuEl] = useState<null | HTMLElement>(null);
+  const { onLogOut } = useAuth();
 
   const navigate = useNavigate();
+
+  const [userMenuEl, setUserMenuEl] = useState<null | HTMLElement>(null);
+  const [settingsMenuEl, setSettingsMenuEl] = useState<null | HTMLElement>(null);
 
   const onNavigate = (path: string) => {
     navigate(path);
@@ -96,7 +100,7 @@ export const UserMenu = ({ user }: UserMenuProps) => {
             <SettingsOutlinedIcon /> Settings
           </Box>
         </MenuItem>
-        <MenuItem onClick={() => console.log('@log-out')}>
+        <MenuItem onClick={onLogOut}>
           <Box alignItems='center' columnGap={2} display='flex'>
             <LogoutIcon /> Log out
           </Box>

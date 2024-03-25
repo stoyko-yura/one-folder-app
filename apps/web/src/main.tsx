@@ -6,12 +6,15 @@ import ReactDOM from 'react-dom/client';
 import { theme } from '@/config';
 
 import { App } from './App';
+import { AuthProvider } from './components/providers';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <App />
+      <AuthProvider>
+        <App />
+      </AuthProvider>
     </ThemeProvider>
   </React.StrictMode>
 );
