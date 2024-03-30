@@ -2,7 +2,7 @@ import Folder from '@mui/icons-material/Folder';
 import LogoutIcon from '@mui/icons-material/Logout';
 import PersonIcon from '@mui/icons-material/Person';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
-import { Box, IconButton, Menu, MenuItem } from '@mui/material';
+import { Box, Button, IconButton, Menu, MenuItem } from '@mui/material';
 import type { UserData } from '@one-folder-app/types';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -44,15 +44,16 @@ export const UserMenu = ({ user }: UserMenuProps) => {
   return (
     <>
       <Box>
-        <IconButton
+        <Button
           aria-controls={userMenuEl ? 'user-menu' : undefined}
           aria-expanded={userMenuEl ? 'true' : undefined}
           aria-haspopup='true'
           color='inherit'
+          startIcon={<PersonIcon />}
           onClick={onOpenUserMenu}
         >
-          <PersonIcon />
-        </IconButton>
+          {user.profile?.username || user.login}
+        </Button>
 
         <IconButton
           aria-controls={settingsMenuEl ? 'settings-menu' : undefined}

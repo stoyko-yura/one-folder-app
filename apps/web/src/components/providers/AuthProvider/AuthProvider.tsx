@@ -2,6 +2,7 @@ import type {
   GetMeResponseBody,
   SignInRequestBody,
   SignInResponseBody,
+  SignUpRequestBody,
   UserData
 } from '@one-folder-app/types';
 import { useMemo, useState, type PropsWithChildren } from 'react';
@@ -15,6 +16,22 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const onSignIn = async (values: SignInRequestBody) => {
     const response = await fetch('http://localhost:3000/api/auth/sign-in', {
+      body: JSON.stringify(values),
+      headers: { 'Content-Type': 'application/json' },
+      method: 'POST'
+    });
+
+    const data: SignInResponseBody = await response.json();
+
+    if (data.token) {
+      window.localStorage.setItem('token', data.token);
+    }
+
+    setUser(data.user);
+  };
+
+  const onSignUp = async (values: SignUpRequestBody) => {
+    const response = await fetch('http://localhost:3000/api/auth/sign-up', {
       body: JSON.stringify(values),
       headers: { 'Content-Type': 'application/json' },
       method: 'POST'
@@ -53,7 +70,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  const authContextValues = useMemo(() => ({ checkAuth, onLogOut, onSignIn, user }), [user]);
+  const authContextValues = useMemo(
+    () => ({ checkAuth, onLogOut, onSignIn, onSignUp, user }),
+    [user]
+  );
 
   return <AuthContext.Provider value={authContextValues}>{children}</AuthContext.Provider>;
 };
