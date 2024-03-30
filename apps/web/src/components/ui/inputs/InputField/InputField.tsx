@@ -10,8 +10,8 @@ interface InputFieldProps extends InputBaseProps {
 export const InputField = forwardRef(({ label = 'Label', ...props }: InputFieldProps, ref) => {
   return (
     <FormControl>
-      <InputLabel htmlFor='standard-input-field'>{label}</InputLabel>
-      <OutlinedInput {...props} ref={ref} id='standard-input-field' label={label} />
+      <InputLabel htmlFor={`standard-input-field-${label}`}>{label}</InputLabel>
+      <OutlinedInput {...props} ref={ref} id={`standard-input-field-${label}`} label={label} />
     </FormControl>
   );
 });

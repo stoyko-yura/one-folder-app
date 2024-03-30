@@ -16,11 +16,11 @@ export const InputPassword = forwardRef(
 
     return (
       <FormControl variant='outlined'>
-        <InputLabel htmlFor='standard-input-password'>{label}</InputLabel>
+        <InputLabel htmlFor={`standard-input-password-${label}`}>{label}</InputLabel>
         <OutlinedInput
           {...props}
           ref={ref}
-          id='standard-input-password'
+          id={`standard-input-password-${label}`}
           label={label}
           type={isShowPassword ? 'text' : 'password'}
           endAdornment={
