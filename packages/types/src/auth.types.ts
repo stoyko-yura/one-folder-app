@@ -47,3 +47,10 @@ export interface ChangePasswordResponseBody extends BaseResponseBody {
   token?: string;
   user: UserData;
 }
+
+// Password recovery
+export interface PasswordRecoveryRequestBody {
+  email: string;
+}
+
+export interface PasswordRecoveryResponseBody extends BaseResponseBody {}

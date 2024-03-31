@@ -23,4 +23,12 @@ router.put(
   authControllers.changePassword
 );
 
+// Password recovery
+router.post(
+  '/password-recovery',
+  authValidation.passwordRecoveryValidation,
+  checkValidation,
+  authControllers.passwordRecovery
+);
+
 export const authRouter = router;

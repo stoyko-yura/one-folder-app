@@ -4,6 +4,8 @@ import type {
   EmptyObject,
   GetMeRequestBody,
   GetMeResponseBody,
+  PasswordRecoveryRequestBody,
+  PasswordRecoveryResponseBody,
   SignInRequestBody,
   SignInResponseBody,
   SignUpRequestBody,
@@ -46,3 +48,13 @@ export type ChangePasswordRequest = Request<
 >;
 
 export type ChangePasswordResponse = Response<ChangePasswordResponseBody>;
+
+// Password recovery
+export type PasswordRecoveryRequest = Request<
+  EmptyObject,
+  PasswordRecoveryResponseBody,
+  PasswordRecoveryRequestBody,
+  EmptyObject
+>;
+
+export type PasswordRecoveryResponse = Response<PasswordRecoveryResponseBody>;

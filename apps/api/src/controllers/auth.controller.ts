@@ -1,18 +1,21 @@
 import type { UserData } from '@one-folder-app/types';
 import type { Response } from 'express';
 
+import { sendToEmail } from '@/libs';
 import { authServices, userServices } from '@/services';
 import type {
   ChangePasswordRequest,
   ChangePasswordResponse,
   GetMeRequest,
   GetMeResponse,
+  PasswordRecoveryRequest,
+  PasswordRecoveryResponse,
   SignInRequest,
   SignInResponse,
   SignUpRequest,
   SignUpResponse
 } from '@/types';
-import { HttpResponseError, errorHandler, excludeFields } from '@/utils';
+import { HttpResponseError, errorHandler, excludeFields, generatePassword } from '@/utils';
 
 // Sign in
 export const signIn = async (req: SignInRequest, res: SignInResponse) => {
@@ -165,6 +168,45 @@ export const changePassword = async (req: ChangePasswordRequest, res: ChangePass
       success: true,
       token,
       user: excludeFields(editedUser, ['hash']) as UserData
+    });
+  } catch (error) {
+    errorHandler(error as HttpResponseError, res as Response);
+  }
+};
+
+// Password recovery
+export const passwordRecovery = async (
+  req: PasswordRecoveryRequest,
+  res: PasswordRecoveryResponse
+) => {
+  try {
+    const { email } = req.body;
+
+    const user = await userServices.getUserByEmailOrLogin({ email });
+
+    if (!user) {
+      throw new HttpResponseError({
+        description: `User with ${email} not found`,
+        message: 'User not found',
+        status: 'NOT_FOUND'
+      });
+    }
+
+    const newPassword = generatePassword(8);
+
+    const passwordHash = await authServices.hashPassword(newPassword);
+
+    await authServices.changeUserPassword(user.id, passwordHash);
+
+    await sendToEmail({
+      email,
+      message: `Your new password ${newPassword}`,
+      subject: 'Password recovery'
+    });
+
+    res.status(200).json({
+      message: 'Password successfully changed',
+      success: true
     });
   } catch (error) {
     errorHandler(error as HttpResponseError, res as Response);

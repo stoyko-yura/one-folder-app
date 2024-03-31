@@ -58,3 +58,12 @@ export const changePasswordValidation: ValidationChain[] = [
     })
     .withMessage('Wrong password format')
 ];
+
+export const passwordRecoveryValidation: ValidationChain[] = [
+  body('email')
+    .not()
+    .isEmpty()
+    .withMessage('Email is required')
+    .isEmail()
+    .withMessage('Wrong email format')
+];
